@@ -87,3 +87,6 @@ node_modules/
 
 # Real Worker configuration (template: share-worker/wrangler.example.toml)
 share-worker/wrangler.toml
+
+# tools/preview_theme.py output
+preview/

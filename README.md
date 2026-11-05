@@ -19,6 +19,7 @@ Raspberry Pi 카메라(picamera2), GPIO 버튼/LED, Linux 자동시작은 빠졌
 - [부스 화면과 촬영 흐름](#부스-화면과-촬영-흐름)
 - [관리 페이지](#관리-페이지) — 설정, 아이패드 리모컨, 사진 공장
 - [사진 템플릿 만들기](#사진-템플릿-만들기) — 템플릿 스튜디오, 테마
+- [디자인 바꾸기 (디자인 시스템 + Claude)](docs/DESIGN.md)
 - [공유 페이지](#공유-페이지)
 - [구조](#구조)
 - [운영 배포](#운영-배포)
@@ -149,7 +150,7 @@ wait ──촬영──▶ choose(컷 수) ─▶ chosen ─▶ preview(카운�
 
 새 사진이 찍힐 때마다 3D 공장 라인에서 R·G·B 색을 입혀 "인쇄"되는 애니메이션입니다. 부스 옆 대형 TV나 모니터에
 전체 화면으로 띄워 둡니다. 사진은 맥 디스크에서 바로 읽으므로 인터넷이 없어도 동작합니다.
-`factory/index.html`을 서버 없이 열면 샘플 사진으로 데모가 돌아갑니다.
+부스 없이 `python3 -m http.server 8780 -d factory`로 띄워 열면 샘플 사진으로 데모가 돌아갑니다.
 
 ## 사진 템플릿 만들기
 
@@ -238,6 +239,8 @@ pibooth/themes/droidknights/
 
 4. 설정 페이지에서 테마를 고르거나 `[GENERAL] theme = <이름>`으로 정하고, 공유 페이지도 다시 배포합니다.
 
+디자인 시스템과 Claude로 색·폰트·프레임·화면을 바꾸는 자세한 방법은 **[docs/DESIGN.md](docs/DESIGN.md)**에 있습니다.
+
 ## 공유 페이지
 
 <img src="docs/images/share-page.jpg" width="300" align="right" alt="공유 페이지">
@@ -287,7 +290,7 @@ plugins/              행사용 플러그인
 factory/              관리 페이지 HTML
 share-worker/         공유 페이지 (Cloudflare Worker)
 admin/                템플릿 스튜디오 (로컬 서버 + 편집기)
-tools/                build_theme.py(테마 빌드), template_editor.html(템플릿 스튜디오 화면, 파일로 열어도 동작)
+tools/                build_theme.py(테마 빌드), preview_theme.py(테마 미리보기), template_editor.html(템플릿 스튜디오 화면)
 packaging/            PyInstaller로 MacBooth.app 빌드
 docs/images/          README 이미지
 tests/                pytest
