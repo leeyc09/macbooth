@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Slide Deck" description="DroidKnights 1920×1080 deck — cover, agenda, section, stat, closing" -->
+<helmet>
+<script src="./ds-base.js"></script>
+</helmet>
+<x-import component-from-global-scope="deck-stage" from="./deck-stage.js" width="1920" height="1080" hint-size="100%,100%">
+
+  <section data-label="Cover" style="position:relative;width:1920px;height:1080px;overflow:hidden;background:#000;font-family:'Noto Sans KR',sans-serif;color:#EAF0FF;display:flex;align-items:center;justify-content:center">
+    <div style="position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 20% 24%,rgba(255,255,255,.6),transparent),radial-gradient(2px 2px at 88% 30%,rgba(177,140,255,.7),transparent),radial-gradient(1px 1px at 12% 78%,rgba(45,123,255,.7),transparent);opacity:.5"></div>
+    <img src="../../assets/logo-full.png" alt="DroidKnights 2026" style="height:1080px;width:auto;object-fit:contain;position:relative;z-index:2">
+    <div style="position:absolute;z-index:3;left:110px;top:64px;font-family:'Roboto Mono',monospace;color:#8B99C0;font-size:24px;letter-spacing:.1em">ANDROID CONFERENCE · SEOUL</div>
+    <div style="position:absolute;z-index:3;right:110px;bottom:64px;font-family:'Roboto Mono',monospace;color:#8B99C0;font-size:24px;letter-spacing:.1em">2026.06 · COEX, Seoul</div>
+  </section>
+
+  <section data-label="Agenda" style="position:relative;width:1920px;height:1080px;overflow:hidden;background:#0B1230;font-family:'Noto Sans KR',sans-serif;color:#EAF0FF;padding:90px 110px">
+    <div style="position:absolute;width:700px;height:700px;border-radius:50%;filter:blur(120px);background:#2D7BFF;opacity:.35;left:-200px;top:-160px"></div>
+    <div style="position:relative;z-index:2">
+      <div style="display:inline-flex;align-items:center;gap:14px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:26px;letter-spacing:.22em;text-transform:uppercase;color:#B18CFF"><svg width="26" height="26" viewBox="0 0 100 100"><path d="M50 3C53 33 67 47 97 50C67 53 53 67 50 97C47 67 33 53 3 50C33 47 47 33 50 3Z" fill="#B18CFF"/></svg>AGENDA</div>
+      <h2 style="font-weight:900;font-size:72px;letter-spacing:-.02em;margin:20px 0 54px">오늘의 <span style="background:linear-gradient(90deg,#2D7BFF,#B18CFF);-webkit-background-clip:text;background-clip:text;color:transparent">세션 트랙</span></h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px 90px;max-width:1500px">
+        <div style="display:flex;align-items:center;gap:30px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:24px"><span style="font-family:'Roboto Mono',monospace;font-size:34px;color:#2D7BFF;width:70px">01</span><span style="font-size:38px;font-weight:700">Jetpack Compose 심화</span></div>
+        <div style="display:flex;align-items:center;gap:30px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:24px"><span style="font-family:'Roboto Mono',monospace;font-size:34px;color:#2D7BFF;width:70px">02</span><span style="font-size:38px;font-weight:700">Kotlin Multiplatform</span></div>
+        <div style="display:flex;align-items:center;gap:30px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:24px"><span style="font-family:'Roboto Mono',monospace;font-size:34px;color:#2D7BFF;width:70px">03</span><span style="font-size:38px;font-weight:700">앱 아키텍처 · 모듈화</span></div>
+        <div style="display:flex;align-items:center;gap:30px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:24px"><span style="font-family:'Roboto Mono',monospace;font-size:34px;color:#2D7BFF;width:70px">04</span><span style="font-size:38px;font-weight:700">AI on Android</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section data-label="Section" style="position:relative;width:1920px;height:1080px;overflow:hidden;background:#0B1230;font-family:'Noto Sans KR',sans-serif;color:#EAF0FF;display:flex;flex-direction:column;justify-content:center;padding:90px 110px">
+    <div style="position:absolute;width:900px;height:900px;border-radius:50%;filter:blur(120px);background:#7B5CFF;opacity:.5;right:-200px;bottom:-260px"></div>
+    <div style="position:relative;z-index:2">
+      <div style="display:inline-flex;align-items:center;gap:14px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:26px;letter-spacing:.22em;text-transform:uppercase;color:#B18CFF"><svg width="26" height="26" viewBox="0 0 100 100"><path d="M50 3C53 33 67 47 97 50C67 53 53 67 50 97C47 67 33 53 3 50C33 47 47 33 50 3Z" fill="#B18CFF"/></svg>SECTION 01</div>
+      <div style="font-weight:900;font-size:420px;line-height:.8;letter-spacing:-.04em;background:linear-gradient(90deg,#2D7BFF,#B18CFF);-webkit-background-clip:text;background-clip:text;color:transparent;opacity:.9">01</div>
+      <div style="font-size:56px;font-weight:900;margin-top:10px">Compose로 만드는 UI</div>
+    </div>
+  </section>
+
+  <section data-label="Stat" style="position:relative;width:1920px;height:1080px;overflow:hidden;background:#0B1230;font-family:'Noto Sans KR',sans-serif;color:#EAF0FF;padding:90px 110px">
+    <div style="position:absolute;width:800px;height:800px;border-radius:50%;filter:blur(120px);background:#2D7BFF;opacity:.35;right:-220px;bottom:-260px"></div>
+    <div style="position:relative;z-index:2">
+      <div style="display:inline-flex;align-items:center;gap:14px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:26px;letter-spacing:.22em;text-transform:uppercase;color:#B18CFF"><svg width="26" height="26" viewBox="0 0 100 100"><path d="M50 3C53 33 67 47 97 50C67 53 53 67 50 97C47 67 33 53 3 50C33 47 47 33 50 3Z" fill="#B18CFF"/></svg>BY THE NUMBERS</div>
+      <h2 style="font-weight:900;font-size:72px;letter-spacing:-.02em;margin:20px 0 60px">커뮤니티가 만든 규모</h2>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:40px">
+        <div style="background:#0E1A3A;border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:44px"><div style="font-weight:900;font-size:120px;line-height:1;background:linear-gradient(90deg,#2D7BFF,#B18CFF);-webkit-background-clip:text;background-clip:text;color:transparent">2,400+</div><div style="font-size:28px;color:#B9C6E8;margin-top:16px">누적 참가 개발자</div></div>
+        <div style="background:#0E1A3A;border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:44px"><div style="font-weight:900;font-size:120px;line-height:1;background:linear-gradient(90deg,#2D7BFF,#B18CFF);-webkit-background-clip:text;background-clip:text;color:transparent">87%</div><div style="font-size:28px;color:#B9C6E8;margin-top:16px">재참가 의향 응답률</div></div>
+        <div style="background:#0E1A3A;border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:44px"><div style="font-weight:900;font-size:120px;line-height:1;background:linear-gradient(90deg,#2D7BFF,#B18CFF);-webkit-background-clip:text;background-clip:text;color:transparent">9회</div><div style="font-size:28px;color:#B9C6E8;margin-top:16px">2017년부터 이어온 개최</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section data-label="Closing" style="position:relative;width:1920px;height:1080px;overflow:hidden;background:#0B1230;font-family:'Noto Sans KR',sans-serif;color:#EAF0FF;display:flex;flex-direction:column;justify-content:center;padding:90px 110px">
+    <div style="position:absolute;width:900px;height:900px;border-radius:50%;filter:blur(120px);background:#7B5CFF;opacity:.5;right:-160px;top:-200px"></div>
+    <img src="../../assets/mascot/cheer.png" alt="" style="position:absolute;right:120px;bottom:0;height:720px;filter:drop-shadow(0 18px 40px rgba(123,92,255,.45))">
+    <div style="position:relative;z-index:2">
+      <div style="display:inline-flex;align-items:center;gap:14px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:26px;letter-spacing:.22em;text-transform:uppercase;color:#B18CFF"><svg width="26" height="26" viewBox="0 0 100 100"><path d="M50 3C53 33 67 47 97 50C67 53 53 67 50 97C47 67 33 53 3 50C33 47 47 33 50 3Z" fill="#B18CFF"/></svg>SEE YOU THERE</div>
+      <h2 style="font-weight:900;font-size:120px;line-height:1.05;letter-spacing:-.02em;margin:24px 0 0">함께 다음<br><span style="background:linear-gradient(90deg,#2D7BFF,#B18CFF);-webkit-background-clip:text;background-clip:text;color:transparent">차원으로</span></h2>
+      <div style="font-size:34px;color:#B9C6E8;margin-top:30px">2026 DroidKnights에서 만나요 · hello@droidknights.kr</div>
+    </div>
+  </section>
+
+</x-import>
+
+</x-dc>
+</body>
+</html>

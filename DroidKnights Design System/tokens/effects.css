@@ -1,0 +1,23 @@
+/* DroidKnights — Effects: shadows, glows, blur, motion */
+:root {
+  /* Brand glow — used under CTAs, hero mascot, sparkles */
+  --dk-glow: 0 12px 30px rgba(45,123,255,.40), 0 24px 60px rgba(123,92,255,.50);
+  --dk-glow-sm: 0 6px 18px rgba(45,123,255,.35);
+  --dk-glow-mascot: drop-shadow(0 18px 40px rgba(123,92,255,.45)); /* @kind shadow */
+
+  /* Elevation on dark surfaces */
+  --dk-shadow-card: 0 8px 30px rgba(0,0,0,.35);
+  --dk-shadow-raised: 0 16px 48px rgba(0,0,0,.45);
+
+  /* Glass / blur (used for chips & floating bars) */
+  --dk-glass-bg: rgba(255,255,255,.06);              /* @kind color */
+  --dk-glass-border: 1px solid rgba(255,255,255,.12); /* @kind other */
+  --dk-blur: blur(14px);                              /* @kind other */
+
+  /* Motion */
+  --dk-ease: cubic-bezier(.22,.61,.36,1);       /* @kind other */
+  --dk-ease-out: cubic-bezier(.16,1,.3,1);      /* @kind other */
+  --dk-dur-fast: 140ms;  /* @kind other */
+  --dk-dur: 240ms;       /* @kind other */
+  --dk-dur-slow: 420ms;  /* @kind other */
+}

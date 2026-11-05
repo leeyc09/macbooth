@@ -1,0 +1,61 @@
+{
+  "name": "Classic",
+  "source": "Macbooth paper look (warm paper, ink, shutter red)",
+  "colors": {
+    "paper": "#F4F1EA",
+    "ink": "#26221C",
+    "muted": "#8C8578",
+    "shutter": "#D1483F",
+    "white": "#FFFFFF",
+
+    "background": "paper",
+    "surface": "white",
+    "text": "ink",
+    "text-muted": "muted",
+    "accent": "shutter"
+  },
+  "fonts": {
+    "display": "Amatic-Bold",
+    "body": "Amatic-Bold",
+    "secondary": "AmaticSC-Regular",
+    "body-ko": "NotoSansKR-Bold"
+  },
+  "web": {
+    "fonts_css": "https://fonts.googleapis.com/css2?family=Amatic+SC:wght@700&display=swap",
+    "font_display": "'Amatic SC', cursive",
+    "font_body": "-apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif",
+    "font_mono": "ui-monospace, monospace",
+    "radius": "12px",
+    "radius_small": "10px"
+  },
+  "booth": {
+    "background": "background",
+    "text": "text",
+    "pictogram": "text",
+    "flash": "white",
+    "countdown": "white",
+    "font": "body",
+    "font_ko": "body-ko"
+  },
+  "qrcode": {
+    "foreground": "ink",
+    "background": "paper"
+  },
+  "event": {
+    "name": "Photo Booth"
+  },
+  "texts": {
+    "en": {
+      "qrcode": "Scan for your photo"
+    },
+    "ko": {
+      "qrcode": "QR을 찍어 사진 받기"
+    }
+  },
+  "templates": [
+    "templates/grid.json",
+    "templates/polaroid.json",
+    "templates/filmstrip.json",
+    "templates/classic-strip.json"
+  ]
+}

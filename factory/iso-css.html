@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo Factory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700;900&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500&display=swap">
+<style>
+  /* DroidKnights Design System tokens + the 3 printing channels */
+  :root {
+    --space: #0B1230; --navy: #0E1A3A; --navy-2: #16234A;
+    --blue: #2D7BFF; --purple: #7B5CFF; --lavender: #B18CFF;
+    --text: #EAF0FF; --text-dim: #B9C6E8; --text-muted: #8B99C0;
+    --grad: linear-gradient(90deg, #2D7BFF, #B18CFF);
+    --grad-brand: linear-gradient(135deg, #2D7BFF, #7B5CFF);
+    --ease: cubic-bezier(.22,.61,.36,1);
+    --ch-r: #FF3B5C; --ch-g: #2BE38A; --ch-b: #2D7BFF;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #050916; overflow: hidden; }
+  body { font-family: 'Noto Sans KR', sans-serif; color: var(--text); }
+
+  /* 1920x1080 design canvas, scaled to fit the browser window */
+  #stage {
+    position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; overflow: hidden;
+    background:
+      radial-gradient(900px 600px at 15% 20%, rgba(45,123,255,.28), transparent 70%),
+      radial-gradient(1000px 700px at 85% 25%, rgba(123,92,255,.30), transparent 70%),
+      radial-gradient(900px 500px at 50% 105%, rgba(123,92,255,.28), transparent 70%),
+      var(--space);
+  }
+  .stars, .stars::after {
+    position: absolute; inset: 0; content: '';
+    background-image:
+      radial-gradient(2px 2px at 120px 80px, #fff, transparent), radial-gradient(1.5px 1.5px at 340px 220px, var(--lavender), transparent),
+      radial-gradient(2px 2px at 620px 120px, #fff, transparent), radial-gradient(1.5px 1.5px at 880px 60px, var(--blue), transparent),
+      radial-gradient(2px 2px at 1180px 90px, #fff, transparent), radial-gradient(1.5px 1.5px at 1420px 200px, var(--lavender), transparent),
+      radial-gradient(2px 2px at 1700px 140px, #fff, transparent), radial-gradient(1.5px 1.5px at 260px 420px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 1560px 420px, #fff, transparent), radial-gradient(2px 2px at 1820px 520px, var(--blue), transparent);
+    background-size: 1920px 600px; opacity: .8;
+  }
+  .stars::after { transform: translate(60px, 300px); opacity: .5; animation: twinkle 4s ease-in-out infinite alternate; }
+  @keyframes twinkle { to { opacity: .15; } }
+
+  #factory { position: absolute; inset: 0; transition: opacity .8s var(--ease), filter .8s var(--ease); }
+  #factory.dim { opacity: .25; filter: blur(3px) saturate(.8); }
+
+  /* Header (screen space) */
+  .logo { position: absolute; left: 64px; top: 40px; height: 150px; z-index: 2; }
+  .header { position: absolute; right: 72px; top: 60px; text-align: right; z-index: 2; }
+  .eyebrow { font: 600 22px/1 'Space Grotesk'; letter-spacing: .22em; color: var(--lavender); margin: 0 0 14px; }
+  .status { font: 900 46px/1.25 'Noto Sans KR'; letter-spacing: -.02em; margin: 0; }
+  .status .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .chips { display: flex; gap: 12px; justify-content: flex-end; margin-top: 18px; }
+  .chip { font: 700 22px/1 'Space Grotesk'; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+    border: 2px solid rgba(255,255,255,.12); color: var(--text-muted); background: rgba(255,255,255,.04); transition: all .35s var(--ease); }
+  .chip.on { color: #fff; border-color: transparent; background: var(--c); box-shadow: 0 0 24px var(--c); }
+
+  /* Isometric world: an orthographic CSS 3D scene (no perspective).
+     World units are px; x runs down-right, y down-left, z up. */
+  .scene { position: absolute; left: 930px; top: 600px; transform-style: preserve-3d; transform: scale(1.22); }
+  .world { position: absolute; left: -650px; top: -400px; width: 1300px; height: 800px;
+    transform-style: preserve-3d; transform: rotateX(60deg) rotateZ(45deg); }
+  .world * { transform-style: preserve-3d; }
+  .face { position: absolute; backface-visibility: hidden; }
+  .billboard { position: absolute; width: 0; height: 0; }
+  .billboard > * { position: absolute; bottom: 0; }
+
+  .floor-top { background:
+      linear-gradient(rgba(177,140,255,.10) 2px, transparent 2px) 0 0 / 100px 100px,
+      linear-gradient(90deg, rgba(177,140,255,.10) 2px, transparent 2px) 0 0 / 100px 100px,
+      linear-gradient(135deg, #1a2a5c, #121e46 60%, #0f1a3d);
+    box-shadow: inset 0 0 0 3px rgba(45,123,255,.55), 0 0 80px rgba(45,123,255,.35); }
+  .belt-top { background: repeating-linear-gradient(90deg, #22336a 0 36px, #2c3f7c 36px 72px);
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.08); }
+  .belt-top.running { animation: belt .6s linear infinite; }
+  @keyframes belt { to { background-position: 72px 0; } }
+
+  /* Characters and beams are billboards standing in the world */
+  .droid { display: block; transform: translateX(-50%); }
+  .painter { filter: drop-shadow(0 0 16px var(--c)) drop-shadow(0 10px 16px rgba(0,0,0,.4)); }
+  .bob { animation: bob 1.6s ease-in-out infinite; }
+  .working { animation: work .28s ease-in-out infinite; }
+  @keyframes bob { 50% { translate: 0 -10px; } }
+  @keyframes work { 50% { translate: 0 -14px; rotate: -5deg; } }
+  .jump { animation: jump .55s var(--ease) 3; }
+  @keyframes jump { 50% { translate: 0 -60px; } }
+  .beam { transform: translateX(-50%); width: 150px; opacity: 0;
+    background: linear-gradient(0deg, color-mix(in srgb, var(--c) 85%, white), color-mix(in srgb, var(--c) 30%, transparent));
+    clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%); filter: blur(1px); transition: opacity .25s; }
+  .beam.on { opacity: .85; animation: flicker .12s linear infinite; }
+  @keyframes flicker { 50% { opacity: .55; } }
+  .label3d { font: 700 30px/1 'Space Grotesk'; color: var(--c); text-shadow: 0 0 14px var(--c); transform: translateX(-50%); }
+
+  /* Sheet: white paper over the 3 channel layers added on a black base */
+  .sheet { position: absolute; left: 0; top: 0; background: #fff; border-radius: 6px; padding: 7px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.1); }
+  .print { position: relative; width: 100%; height: 100%; border-radius: 3px; overflow: hidden; background: #000; isolation: isolate; }
+  .print img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; mix-blend-mode: screen; clip-path: inset(0 0 100% 0); }
+  .print img.r { filter: url(#only-r); } .print img.g { filter: url(#only-g); } .print img.b { filter: url(#only-b); }
+  .print .paper { position: absolute; inset: 0; z-index: 2;
+    background: repeating-linear-gradient(180deg, #f3f5fb 0 14px, #e3e8f4 14px 16px); }
+
+  /* Final photo (screen space) */
+  .final { position: absolute; z-index: 10; background: #fff; border-radius: 10px; padding: 12px;
+    box-shadow: 0 0 0 4px rgba(177,140,255,.6), 0 30px 80px rgba(45,123,255,.5), 0 50px 120px rgba(123,92,255,.55); }
+  .final img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+
+  .spark { position: absolute; z-index: 6; font-size: 26px; pointer-events: none; text-shadow: 0 0 12px currentColor; }
+  .confetti { position: absolute; z-index: 11; font-size: 34px; pointer-events: none; }
+  .caption { position: absolute; left: 0; right: 0; bottom: 34px; text-align: center; z-index: 12;
+    font: 500 22px/1 'Roboto Mono'; color: var(--text-muted); opacity: 0; transition: opacity .6s; }
+  .caption.show { opacity: 1; }
+  .caption b { color: var(--lavender); font-weight: 500; }
+  .fly { position: absolute; z-index: 3; animation: fly 9s ease-in-out infinite; filter: drop-shadow(0 10px 24px rgba(123,92,255,.55)); }
+  @keyframes fly { 0% { transform: translate(0,0) rotate(-6deg); } 50% { transform: translate(260px,-40px) rotate(6deg); } 100% { transform: translate(0,0) rotate(-6deg); } }
+</style>
+</head>
+<body>
+<!-- Channel filters: keep only one of R, G, B (added back together with 'screen') -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="only-r" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter>
+  <filter id="only-g" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter>
+  <filter id="only-b" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"/></filter>
+</svg>
+
+<div id="stage">
+  <div class="stars"></div>
+  <div id="factory">
+    <img class="logo" src="assets/logo-lockup.png" alt="DroidKnights 2026">
+    <div class="header">
+      <p class="eyebrow">✦ PHOTO FACTORY</p>
+      <p class="status" id="status">방금 찍은 사진을<br><span class="grad">인쇄하고 있어요</span></p>
+      <div class="chips">
+        <span class="chip" id="chip-r" style="--c:var(--ch-r)">R</span>
+        <span class="chip" id="chip-g" style="--c:var(--ch-g)">G</span>
+        <span class="chip" id="chip-b" style="--c:var(--ch-b)">B</span>
+      </div>
+    </div>
+    <img class="fly" src="assets/fly.png" style="left:150px; top:380px; width:140px" alt="">
+    <div class="scene"><div class="world" id="world"></div></div>
+  </div>
+  <div class="caption" id="caption">2026.11.02 MON · ST CENTER, SEOUL · <b>#DROIDKNIGHTS</b></div>
+</div>
+
+<script>
+  // Photos shown in turn. The production page will fetch the latest uploads.
+  const PHOTOS = ['assets/photo1.jpg', 'assets/photo2.jpg', 'assets/photo3.jpg'];
+  const HOLD = 7000;      // Time the finished photo stays on screen (ms)
+  const PAINT = 1300;     // Time of one color pass (ms)
+  const CHANNELS = [
+    { id: 'r', name: '레드', color: '#FF3B5C', x: 380, droid: 'laptop' },
+    { id: 'g', name: '그린', color: '#2BE38A', x: 650, droid: 'point' },
+    { id: 'b', name: '블루', color: '#2D7BFF', x: 920, droid: 'wave' },
+  ];
+
+  // World layout (px): floor 1300 x 800, belt along x, 40 high
+  const BELT = { y: 300, d: 210, h: 40 };
+  const SHEET = { w: 120, d: 180 };                 // Lying on the belt (x, y)
+  const SHEET_Y = BELT.y + (BELT.d - SHEET.d) / 2;
+  const GANTRY = { h: 270, head: 190 };             // Beam top, print head bottom
+  const FINAL = { left: 660, top: 96, width: 600, height: 900 };
+
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), world = $('world');
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  let scale = 1;
+
+  function fit() {
+    scale = Math.min(innerWidth / 1920, innerHeight / 1080);
+    stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+  }
+  addEventListener('resize', fit); fit();
+
+  function el(tag, cls, style, parent) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    Object.assign(e.style, style || {});
+    (parent || world).appendChild(e);
+    return e;
+  }
+
+  // A box with its 3 visible faces (top, +x side, +y side)
+  function box(x, y, z, w, d, h, colors, parent) {
+    const [top, right, front] = colors;
+    const t = el('div', 'face', { left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${d}px`,
+      background: top, transform: `translateZ(${z + h}px)` }, parent);
+    el('div', 'face', { left: `${x}px`, top: `${y + d}px`, width: `${w}px`, height: `${h}px`, background: front,
+      transformOrigin: '0 0', transform: `translateZ(${z + h}px) rotateX(-90deg)` }, parent);
+    el('div', 'face', { left: `${x + w}px`, top: `${y}px`, width: `${h}px`, height: `${d}px`, background: right,
+      transformOrigin: '0 0', transform: `translateZ(${z + h}px) rotateY(90deg)` }, parent);
+    return t;
+  }
+
+  // An upright element facing the camera, its bottom center at (x, y, z)
+  function billboard(x, y, z, child) {
+    const b = el('div', 'billboard', { left: `${x}px`, top: `${y}px`,
+      transform: `translateZ(${z}px) rotateZ(-45deg) rotateX(-60deg)` });
+    b.appendChild(child);
+    return b;
+  }
+
+  function sprite(src, width, cls, style) {
+    const img = document.createElement('img');
+    img.src = src; img.className = cls; img.alt = '';
+    Object.assign(img.style, { width: `${width}px` }, style || {});
+    return img;
+  }
+
+  // --- Build the factory -------------------------------------------------
+  const NAVY = ['#22356e', '#16234A', '#101b3d'];
+  box(0, 0, -36, 1300, 800, 36, ['transparent', '#14214a', '#0d1738']).className = 'face floor-top';
+  const beltTop = box(0, BELT.y, 0, 1300, BELT.d, BELT.h, ['', '#1a2858', '#121d45']);
+  beltTop.classList.add('belt-top');
+  for (let x = 30; x < 1300; x += 110) {   // Rollers on the belt side
+    el('div', 'face', { left: `${x}px`, top: `${BELT.y + BELT.d}px`, width: '26px', height: '26px', borderRadius: '50%',
+      background: '#2a3b70', border: '3px solid #3a4c86', transformOrigin: '0 0',
+      transform: `translateZ(${BELT.h - 7}px) rotateX(-90deg) translateZ(1px)` });
+  }
+
+  // Decorations: crates and a paper stack
+  box(1080, 80, 0, 110, 110, 90, ['#2a3d78', '#1d2c5c', '#152249']);
+  box(1110, 100, 90, 70, 70, 50, ['#33488a', '#22346a', '#1a2a57']);
+  box(120, 600, 0, 120, 90, 60, ['#2a3d78', '#1d2c5c', '#152249']);
+  box(60, 80, 0, 130, 170, 26, ['#f3f5fb', '#d6dcec', '#c5cce0']);
+  box(66, 86, 26, 118, 158, 22, ['#ffffff', '#dfe4f1', '#cdd4e6']);
+
+  // 3 RGB stations: gantry, print head, label, beam and the painter droid
+  const beams = {}, droids = {};
+  CHANNELS.forEach((ch, i) => {
+    const legY1 = BELT.y - 46, legY2 = BELT.y + BELT.d + 20;
+    box(ch.x - 14, legY1, 0, 28, 26, GANTRY.h, NAVY);
+    box(ch.x - 14, legY2, 0, 28, 26, GANTRY.h, NAVY);
+    box(ch.x - 20, legY1, GANTRY.h, 40, legY2 + 26 - legY1, 22, ['#2c4080', '#1c2b5a', '#16234A']);
+    const head = box(ch.x - 42, BELT.y + BELT.d / 2 - 42, GANTRY.head, 84, 84, GANTRY.h - GANTRY.head, ['#26397a', '#1a2858', '#142050']);
+    head.style.boxShadow = `inset 0 0 0 3px ${ch.color}, 0 0 30px ${ch.color}`;
+
+    const beam = document.createElement('div');
+    beam.className = 'beam';
+    beam.style.setProperty('--c', ch.color);
+    beam.style.height = `${(GANTRY.head - BELT.h) * 0.866}px`;   // Vertical world distance projected on screen
+    billboard(ch.x, BELT.y + BELT.d / 2, BELT.h + 4, beam);
+    beams[ch.id] = beam;
+
+    const label = document.createElement('div');
+    label.className = 'label3d'; label.textContent = ch.id.toUpperCase();
+    label.style.setProperty('--c', ch.color);
+    billboard(ch.x, legY2 + 40, GANTRY.h + 30, label);
+
+    const droid = sprite(`assets/${ch.droid}.png`, 118, 'droid painter bob');
+    droid.style.setProperty('--c', ch.color);
+    droid.style.animationDelay = `${-i * .5}s`;
+    billboard(ch.x, BELT.y + BELT.d / 2, GANTRY.h + 22, droid);
+    droids[ch.id] = droid;
+  });
+
+  const cheer = sprite('assets/cheer.png', 160, 'droid bob', { filter: 'drop-shadow(0 10px 24px rgba(123,92,255,.55))' });
+  billboard(1180, 690, 0, cheer);
+
+  // --- Animation ---------------------------------------------------------
+  function setStatus(line1, line2, color) {
+    const style = color ? ` style="color:${color};-webkit-text-fill-color:${color}"` : '';
+    $('status').innerHTML = `${line1}<br><span class="grad"${style}>${line2}</span>`;
+  }
+
+  function stagePoint(element) {
+    const r = element.getBoundingClientRect(), s = stage.getBoundingClientRect();
+    return { x: (r.left + r.width / 2 - s.left) / scale, y: (r.top + r.height / 2 - s.top) / scale,
+             w: r.width / scale, h: r.height / scale };
+  }
+
+  function burst(x, y, count, cls, glyphs, colors, spread) {
+    for (let i = 0; i < count; i++) {
+      const e = el('span', cls, { left: `${x}px`, top: `${y}px`, color: colors[i % colors.length] }, stage);
+      e.textContent = glyphs[i % glyphs.length];
+      const angle = (Math.PI * 2 * i) / count + Math.random() * .6;
+      const dist = 40 + Math.random() * spread;
+      e.animate([
+        { transform: 'translate(0,0) scale(.4)', opacity: 1 },
+        { transform: `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist - 50}px) scale(1.2) rotate(${Math.random() * 360}deg)`, opacity: 0 },
+      ], { duration: 800 + Math.random() * 700, easing: 'cubic-bezier(.22,.61,.36,1)' }).onfinish = () => e.remove();
+    }
+  }
+
+  const at = (x) => ({ transform: `translate3d(${x}px, ${SHEET_Y}px, ${BELT.h + 1}px)` });
+
+  async function move(sheet, from, to, duration) {
+    beltTop.classList.add('running');
+    await sheet.animate([at(from), at(to)], { duration, easing: 'cubic-bezier(.45,.05,.55,.95)', fill: 'forwards' }).finished;
+    beltTop.classList.remove('running');
+  }
+
+  async function paint(sheet, layers, ch, index) {
+    setStatus(`${index + 1}번 드로이드가`, `${ch.name}을 입히는 중`, ch.color);
+    beams[ch.id].classList.add('on');
+    droids[ch.id].classList.replace('bob', 'working');
+    const wipe = [{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0 0)' }];
+    const anims = [layers[ch.id].animate(wipe, { duration: PAINT, easing: 'ease-in-out', fill: 'forwards' })];
+    if (index === 0) {  // The blank paper is consumed by the first pass
+      anims.push(sheet.querySelector('.paper').animate(
+        [{ clipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(100% 0 0 0)' }], { duration: PAINT, easing: 'ease-in-out', fill: 'forwards' }));
+    }
+    const sparks = setInterval(() => {
+      const p = stagePoint(sheet);
+      burst(p.x + (Math.random() - .5) * p.w * .6, p.y + (Math.random() - .5) * p.h * .6, 3, 'spark', ['✦', '·', '✧'], [ch.color], 70);
+    }, 160);
+    await Promise.all(anims.map((a) => a.finished));
+    clearInterval(sparks);
+    beams[ch.id].classList.remove('on');
+    droids[ch.id].classList.replace('working', 'bob');
+    $(`chip-${ch.id}`).classList.add('on');
+  }
+
+  async function play(src) {
+    const img = new Image();
+    img.src = src;
+    await img.decode().catch(() => {});
+
+    const sheet = el('div', 'sheet', { width: `${SHEET.w}px`, height: `${SHEET.d}px` });
+    sheet.innerHTML = `<div class="print">
+      <img class="r" src="${src}" alt=""><img class="g" src="${src}" alt=""><img class="b" src="${src}" alt="">
+      <div class="paper"></div></div>`;
+    const layers = { r: sheet.querySelector('.r'), g: sheet.querySelector('.g'), b: sheet.querySelector('.b') };
+    document.querySelectorAll('.chip').forEach((c) => c.classList.remove('on'));
+
+    // 1-3. The blank sheet rides the belt under the R, G and B stations
+    setStatus('방금 찍은 사진을', '인쇄하고 있어요');
+    let x = -40;
+    sheet.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400 });
+    for (let i = 0; i < CHANNELS.length; i++) {
+      const target = CHANNELS[i].x - SHEET.w / 2;
+      await move(sheet, x, target, i === 0 ? 1500 : 900);
+      x = target;
+      await paint(sheet, layers, CHANNELS[i], i);
+    }
+
+    // 4. Full color: the photo rides to the end of the belt
+    setStatus('RGB 완성!', '사진이 나오고 있어요');
+    await move(sheet, x, 1110, 1100);
+    await sleep(250);
+
+    // 5. Reveal: the photo lifts off the belt to the front of the screen
+    const p = stagePoint(sheet);
+    const final = el('div', 'final', { left: `${p.x - 60}px`, top: `${p.y - 90}px`, width: '120px', height: '180px' }, stage);
+    final.innerHTML = `<img src="${src}" alt="">`;
+    sheet.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250, fill: 'forwards' });
+    $('factory').classList.add('dim');
+    cheer.classList.add('jump');
+    setStatus('완성!', '함께 다음 차원으로');
+    const lift = final.animate([
+      { left: `${p.x - 60}px`, top: `${p.y - 90}px`, width: '120px', height: '180px', transform: 'rotate(-8deg)' },
+      { left: `${FINAL.left}px`, top: `${FINAL.top}px`, width: `${FINAL.width}px`, height: `${FINAL.height}px`, transform: 'rotate(0deg)' },
+    ], { duration: 1000, easing: 'cubic-bezier(.34,1.3,.5,1)', fill: 'forwards' });
+    setTimeout(() => burst(960, 520, 40, 'confetti', ['✦', '✧', '★'], ['#FF3B5C', '#2BE38A', '#2D7BFF', '#B18CFF', '#EAF0FF'], 520), 450);
+    await lift.finished;
+    $('caption').classList.add('show');
+
+    await sleep(HOLD);
+
+    // 6. Outro: the photo leaves, the factory is ready for the next one
+    $('caption').classList.remove('show');
+    await final.animate([{ opacity: 1, transform: 'translate(0,0) scale(1)' }, { opacity: 0, transform: 'translate(500px,-500px) scale(.4) rotate(12deg)' }],
+      { duration: 900, easing: 'cubic-bezier(.55,.06,.68,.19)', fill: 'forwards' }).finished;
+    final.remove(); sheet.remove();
+    cheer.classList.remove('jump');
+    $('factory').classList.remove('dim');
+    await sleep(900);
+  }
+
+  (async function loop() {
+    for (let i = 0; ; i = (i + 1) % PHOTOS.length) {
+      await play(PHOTOS[i]);
+    }
+  })();
+</script>
+</body>
+</html>

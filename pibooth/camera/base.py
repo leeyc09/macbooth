@@ -1,0 +1,168 @@
+# -*- coding: utf-8 -*-
+
+import pygame
+from PIL import Image, ImageDraw
+
+from pibooth import fonts, theme
+from pibooth.pictures import sizing
+
+
+class BaseCamera(object):
+
+    AUTOFOCUS_MODES = ('continuous', 'capture', 'off')
+
+    def __init__(self, camera_proxy):
+        self._cam = camera_proxy
+        self._border = 50
+        self._window = None
+        self._overlay = None
+        self._captures = []
+        self._clip = []  # Frames (BGR arrays) of the video clip of the sequence
+
+        # Video clip of the capture sequence: the last 'clip_seconds' before
+        # each capture, at most 'clip_fps' frames per second, 'clip_width' wide
+        # (0 seconds to disable). Only cameras with a video preview record it.
+        self.clip_seconds = 0
+        self.clip_fps = 15
+        self.clip_width = 480
+
+        self.resolution = None
+        self.delete_internal_memory = False
+        self.preview_rotation, self.capture_rotation = (0, 0)
+        self.preview_iso, self.capture_iso = (100, 100)
+        self.preview_flip, self.capture_flip = (False, False)
+        self.autofocus = 'continuous'
+        self.lens_position = 0.0
+
+    def initialize(self, iso, resolution, rotation=0, flip=False, delete_internal_memory=False,
+                   autofocus='continuous', lens_position=0.0):
+        """Initialize the camera. The autofocus parameters are only used by the
+        cameras having a motorized lens (else they are ignored).
+        """
+        if not isinstance(rotation, (tuple, list)):
+            rotation = (rotation, rotation)
+        self.preview_rotation, self.capture_rotation = rotation
+        for name in ('preview', 'capture'):
+            rotation = getattr(self, '{}_rotation'.format(name))
+            if rotation not in (0, 90, 180, 270):
+                raise ValueError(
+                    "Invalid {} camera rotation value '{}' (should be 0, 90, 180 or 270)".format(name, rotation))
+        self.resolution = resolution
+        self.capture_flip = flip
+        if not isinstance(iso, (tuple, list)):
+            iso = (iso, iso)
+        self.preview_iso, self.capture_iso = iso
+        self.delete_internal_memory = delete_internal_memory
+        if autofocus not in self.AUTOFOCUS_MODES:
+            raise ValueError(
+                "Invalid camera autofocus value '{}' (choose among {})".format(autofocus, self.AUTOFOCUS_MODES))
+        self.autofocus = autofocus
+        self.lens_position = lens_position
+        self._specific_initialization()
+
+    def _specific_initialization(self):
+        """Specific camera initialization.
+        """
+        pass
+
+    def _show_overlay(self, text, alpha):
+        """Add an image as an overlay.
+        """
+        self._overlay = text
+
+    def _hide_overlay(self):
+        """Remove any existing overlay.
+        """
+        if self._overlay is not None:
+            self._overlay = None
+
+    def _post_process_capture(self, capture_data):
+        """Rework and return a PIL Image object from capture data.
+        """
+        raise NotImplementedError
+
+    def get_rect(self, max_size=None):
+        """Return a Rect object (as defined in pygame) for resizing preview and images
+        in order to fit to the defined window.
+        """
+        rect = self._window.get_rect(absolute=True)
+        size = (rect.width - 2 * self._border, rect.height - 2 * self._border)
+        if max_size:
+            size = (min(size[0], max_size[0]), min(size[1], max_size[1]))
+        res = sizing.new_size_keep_aspect_ratio(self.resolution, size)
+        return pygame.Rect(rect.centerx - res[0] // 2, rect.centery - res[1] // 2, res[0], res[1])
+
+    def build_overlay(self, size, text, alpha):
+        """Return a PIL image with the given text that can be used
+        as an overlay for the camera.
+        """
+        image = Image.new('RGBA', size)
+        draw = ImageDraw.Draw(image)
+
+        font = fonts.get_pil_font(text, fonts.CURRENT, 0.9 * size[0], 0.9 * size[1])
+        # The bounding box gives the offsets of the glyphs (left and top bearings),
+        # they shall be removed from the position else the text is not centered
+        left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
+
+        position = ((size[0] - (right - left)) // 2 - left, (size[1] - (bottom - top)) // 2 - top)
+        color = theme.CURRENT.role_color('booth', 'countdown', (255, 255, 255))
+        draw.text(position, text, (*color, alpha), font=font)
+        return image
+
+    def preview(self, window, flip=True):
+        """Setup the preview.
+        """
+        raise NotImplementedError
+
+    def preview_countdown(self, timeout, alpha=60):
+        """Show a countdown of `timeout` seconds on the preview.
+        Returns when the countdown is finished.
+        """
+        raise NotImplementedError
+
+    def preview_wait(self, timeout, alpha=60):
+        """Wait the given time and let doing the job.
+        Returns when the timeout is reached.
+        """
+        raise NotImplementedError
+
+    def stop_preview(self):
+        """Stop the preview.
+        """
+        raise NotImplementedError
+
+    def capture(self, effect=None):
+        """Capture a new picture.
+        """
+        raise NotImplementedError
+
+    def get_captures(self):
+        """Return all buffered captures as PIL images (buffer dropped after call).
+        """
+        images = []
+        for data in self._captures:
+            images.append(self._post_process_capture(data))
+        self.drop_captures()
+        return images
+
+    def drop_captures(self):
+        """Delete all buffered captures.
+        """
+        self._captures.clear()
+
+    def get_clip(self):
+        """Return the frames (BGR arrays, 'clip_fps' per second) recorded
+        before each capture of the sequence, and drop them.
+        """
+        frames, self._clip = self._clip, []
+        return frames
+
+    def drop_clip(self):
+        """Delete the recorded video clip frames.
+        """
+        self._clip = []
+
+    def quit(self):
+        """Close the camera driver, it's definitive.
+        """
+        raise NotImplementedError

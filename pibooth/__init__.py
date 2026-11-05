@@ -1,0 +1,15 @@
+# -*- coding: utf-8 -*-
+
+"""A photo booth application in pure Python for macOS (fork of pibooth)."""
+
+__version__ = "2.1.0"
+
+try:
+
+    import pluggy
+
+    # Marker to be imported and used in plugins (and for own implementations)
+    hookimpl = pluggy.HookimplMarker('pibooth')
+
+except ImportError:
+    pass  # When running the setup.py, pluggy is not yet installed

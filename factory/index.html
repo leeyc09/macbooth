@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo Factory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700;900&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500&display=swap">
+<style>
+  :root {
+    --space: #0B1230; --lavender: #B18CFF; --blue: #2D7BFF;
+    --text: #EAF0FF; --text-muted: #8B99C0;
+    --grad: linear-gradient(90deg, #2D7BFF, #B18CFF);
+    --ease: cubic-bezier(.22,.61,.36,1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #050916; overflow: hidden; }
+  body { font-family: 'Noto Sans KR', sans-serif; color: var(--text); }
+  #stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; overflow: hidden;
+    background:
+      radial-gradient(900px 600px at 15% 20%, rgba(45,123,255,.28), transparent 70%),
+      radial-gradient(1000px 700px at 85% 25%, rgba(123,92,255,.30), transparent 70%),
+      radial-gradient(900px 500px at 50% 105%, rgba(123,92,255,.28), transparent 70%),
+      var(--space); }
+  .stars { position: absolute; inset: 0; opacity: .8;
+    background-image:
+      radial-gradient(2px 2px at 120px 80px, #fff, transparent), radial-gradient(1.5px 1.5px at 340px 220px, var(--lavender), transparent),
+      radial-gradient(2px 2px at 620px 120px, #fff, transparent), radial-gradient(1.5px 1.5px at 880px 60px, var(--blue), transparent),
+      radial-gradient(2px 2px at 1180px 90px, #fff, transparent), radial-gradient(1.5px 1.5px at 1420px 200px, var(--lavender), transparent),
+      radial-gradient(2px 2px at 1700px 140px, #fff, transparent), radial-gradient(1.5px 1.5px at 260px 420px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 1560px 420px, #fff, transparent), radial-gradient(2px 2px at 1820px 520px, var(--blue), transparent);
+    background-size: 1920px 600px; }
+  canvas#gl { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+  .logo { position: absolute; right: 64px; bottom: 40px; height: 150px; z-index: 2; transition: opacity .6s; }
+  .header { position: absolute; right: 72px; top: 60px; text-align: right; z-index: 2; transition: opacity .6s; }
+  .dim .logo, .dim .header { opacity: .45; }
+  .eyebrow { font: 600 22px/1 'Space Grotesk'; letter-spacing: .22em; color: var(--lavender); margin: 0 0 14px; }
+  .status { font: 900 46px/1.25 'Noto Sans KR'; letter-spacing: -.02em; margin: 0; }
+  .status .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .chips { display: flex; gap: 12px; justify-content: flex-end; align-items: center; margin-top: 18px; }
+  .chip { font: 700 22px/1 'Space Grotesk'; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+    border: 2px solid rgba(255,255,255,.12); color: var(--text-muted); background: rgba(255,255,255,.04); transition: all .35s var(--ease); }
+  .chip.on { color: #fff; border-color: transparent; background: var(--c); box-shadow: 0 0 24px var(--c); }
+  .count { font: 500 20px/1 'Roboto Mono'; color: var(--text-muted); margin-right: 8px; }
+  .count b { color: var(--lavender); font-weight: 500; }
+  .confetti { position: absolute; z-index: 11; font-size: 34px; pointer-events: none; }
+  .caption { position: absolute; text-align: center; z-index: 12; white-space: nowrap;
+    font: 500 18px/1 'Roboto Mono'; color: var(--text-muted); opacity: 0; transition: opacity .6s; }
+  .caption.show { opacity: 1; }
+  .caption b { color: var(--lavender); font-weight: 500; }
+</style>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
+</head>
+<body>
+<div id="stage">
+  <div class="stars"></div>
+  <canvas id="gl"></canvas>
+  <img class="logo" src="assets/logo-lockup.png" alt="DroidKnights 2026">
+  <div class="header">
+    <p class="eyebrow">✦ PHOTO FACTORY</p>
+    <p class="status" id="status">사진을 찍으면<br><span class="grad">여기서 인쇄돼요</span></p>
+    <div class="chips">
+      <span class="count">공장 안 사진 <b id="count">0</b>장</span>
+      <span class="chip" id="chip-r" style="--c:#FF3B5C">R</span>
+      <span class="chip" id="chip-g" style="--c:#2BE38A">G</span>
+      <span class="chip" id="chip-b" style="--c:#2D7BFF">B</span>
+    </div>
+  </div>
+  <div class="caption" id="caption">2026.11.02 MON · ST CENTER, SEOUL · <b>#DROIDKNIGHTS</b></div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+
+// Live feed: served by the pibooth 'factory' plugin, the page polls the new
+// pictures of the booth (/api/photos). Opened without it, a demo feed cycles
+// the sample pictures every ARRIVAL ms.
+const PHOTOS = ['assets/photo1.jpg', 'assets/photo2.jpg', 'assets/photo3.jpg'];
+const ARRIVAL = Number(new URLSearchParams(location.search).get('arrival')) || 9000;   // ?arrival=ms (demo)
+const POLL = 2000;
+const MAX_IN_FACTORY = 5;
+const HOLD = 8000;                 // Time the revealed photo stays big (ms)
+const PAINT = 900;                 // Time of one color pass (ms)
+// Revealed photo on the screen (px of the 1920x1080 stage): on the left, as
+// tall as possible with its caption right below
+const REVEAL = { left: 64, top: 48, height: 930 };
+REVEAL.width = Math.round(REVEAL.height * 9 / 13.5);
+const WALK_SPEED = 16;             // World units per second
+const CHANNELS = [
+  { id: 'r', name: '레드를', hex: '#FF3B5C', x: -24 },
+  { id: 'g', name: '그린을', hex: '#2BE38A', x: 2 },
+  { id: 'b', name: '블루를', hex: '#2D7BFF', x: 28 },
+];
+const BELT = { x0: -56, x1: 56, width: 17, top: 3 };
+const SHEET = { w: 9, h: 13.5 };
+// Floor x: -66..66, z: back wall at -32, front edge at 42 (a wide front aisle)
+const FLOOR = { w: 132, back: -32, front: 42 };
+FLOOR.d = FLOOR.front - FLOOR.back;
+FLOOR.cz = (FLOOR.front + FLOOR.back) / 2;
+const PICKUP_X = BELT.x1 - 8;      // Where revealed photos wait to be filed
+const CARRY_SCALE = .62;           // Photo size when carried / on the pickup tray
+
+const $ = (id) => document.getElementById(id);
+const stage = $('stage');
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// --- Renderer, isometric camera, lights -----------------------------------
+const renderer = new THREE.WebGLRenderer({ canvas: $('gl'), antialias: true, alpha: true });
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setClearColor(0x000000, 0);
+
+let scale = 1;
+function fit() {
+  scale = Math.min(innerWidth / 1920, innerHeight / 1080);
+  stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+  renderer.setPixelRatio(Math.min(2, scale * devicePixelRatio));
+  renderer.setSize(1920, 1080, false);
+}
+addEventListener('resize', fit); fit();
+
+const scene = new THREE.Scene();
+// ?closeup: zoom on the first painter droid (to check the character model)
+const CLOSEUP = new URLSearchParams(location.search).has('closeup');
+const DEBUG = new URLSearchParams(location.search).has('debug');
+const VIEW_H = CLOSEUP ? 22 : 84;
+const camera = new THREE.OrthographicCamera(-VIEW_H * 16 / 18, VIEW_H * 16 / 18, VIEW_H / 2, -VIEW_H / 2, 0.1, 1000);
+const TARGET = CLOSEUP ? new THREE.Vector3(-32.5, 8, -13) : new THREE.Vector3(2, 7, 6);
+camera.position.copy(TARGET).add(new THREE.Vector3(100, 82, 100));
+camera.lookAt(TARGET);
+
+const ambient = new THREE.AmbientLight(0x9fb2ff, 1.1);
+const hemi = new THREE.HemisphereLight(0xb5c8ff, 0x4a2a9a, 1.6);
+const sun = new THREE.DirectionalLight(0xffffff, 2.6);
+sun.position.set(-30, 90, 40);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -90, right: 90, top: 70, bottom: -70, near: 1, far: 250 });
+scene.add(ambient, hemi, sun);
+const LIGHTS = [[ambient, 1.1], [hemi, 1.6], [sun, 2.6]];
+
+// --- Helpers ----------------------------------------------------------------
+const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.15, ...extra });
+function mesh(geometry, material, x = 0, y = 0, z = 0, parent = scene) {
+  const m = new THREE.Mesh(geometry, material);
+  m.position.set(x, y, z);
+  m.castShadow = m.receiveShadow = true;
+  parent.add(m);
+  return m;
+}
+function canvasTexture(w, h, draw) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+function label(text, color, size = 6) {
+  const t = canvasTexture(128, 128, (g) => {
+    g.font = '700 96px "Space Grotesk", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.shadowColor = color; g.shadowBlur = 24; g.fillStyle = color; g.fillText(text, 64, 70);
+  });
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false }));
+  s.scale.set(size, size, 1);
+  scene.add(s);
+  return s;
+}
+const ease = {
+  inOut: (t) => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2,
+  out: (t) => 1 - Math.pow(1 - t, 3),
+  back: (t) => 1 + 2.4 * Math.pow(t - 1, 3) + 1.4 * Math.pow(t - 1, 2),
+  linear: (t) => t,
+};
+function tween(ms, update, easing = ease.inOut) {
+  const start = performance.now();
+  return new Promise((resolve) => {
+    (function step(now) {
+      const p = Math.min(1, (now - start) / ms);
+      update(easing(p), p);
+      if (p < 1) requestAnimationFrame(step); else resolve();
+    })(start);
+  });
+}
+
+// FIFO lock: the photos use the loader, each station, the belt end and the
+// reveal one at a time, in their arrival order.
+class Lock {
+  constructor() { this.tail = Promise.resolve(); }
+  acquire() {
+    let release;
+    const next = new Promise((r) => { release = r; });
+    const ready = this.tail.then(() => release);
+    this.tail = this.tail.then(() => next);
+    return ready;
+  }
+}
+
+// --- Room: floor, walls, windows ------------------------------------------
+const gridTex = canvasTexture(256, 256, (g, w, h) => {
+  const grad = g.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, '#1d2e63'); grad.addColorStop(1, '#141f4a');
+  g.fillStyle = grad; g.fillRect(0, 0, w, h);
+  g.strokeStyle = 'rgba(177,140,255,.18)'; g.lineWidth = 3; g.strokeRect(0, 0, w, h);
+});
+gridTex.wrapS = gridTex.wrapT = THREE.RepeatWrapping;
+gridTex.repeat.set(13.2, FLOOR.d / 10);
+const floor = mesh(new THREE.BoxGeometry(FLOOR.w, 3, FLOOR.d), [mat(0x101a3e), mat(0x101a3e), mat(0xffffff, { map: gridTex }), mat(0x0b1230), mat(0x14214a), mat(0x101a3e)], 0, -1.5, FLOOR.cz);
+floor.castShadow = false;
+const edgeLines = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(FLOOR.w, 3, FLOOR.d)),
+  new THREE.LineBasicMaterial({ color: 0x2D7BFF, transparent: true, opacity: .8 }));
+edgeLines.position.set(0, -1.5, FLOOR.cz); scene.add(edgeLines);
+
+const WALL_H = 30;
+const wallTex = canvasTexture(256, 256, (g, w, h) => {
+  const grad = g.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#1b2a5e'); grad.addColorStop(1, '#121c45');
+  g.fillStyle = grad; g.fillRect(0, 0, w, h);
+  g.strokeStyle = 'rgba(177,140,255,.12)'; g.lineWidth = 4; g.strokeRect(2, 2, w - 4, h - 4);
+});
+wallTex.wrapS = THREE.RepeatWrapping; wallTex.repeat.set(8, 1);
+const wallMat = mat(0xffffff, { map: wallTex, roughness: .9 });
+mesh(new THREE.BoxGeometry(FLOOR.w, WALL_H, 1.5), wallMat, 0, WALL_H / 2, FLOOR.back - .75);
+const leftWallTex = wallTex.clone(); leftWallTex.repeat.set(4, 1); leftWallTex.needsUpdate = true;
+mesh(new THREE.BoxGeometry(1.5, WALL_H, FLOOR.d + 1.5), mat(0xffffff, { map: leftWallTex, roughness: .9 }), -FLOOR.w / 2 - .75, WALL_H / 2, FLOOR.cz - .75);
+// Windows on the space outside
+const windowTex = canvasTexture(128, 128, (g, w, h) => {
+  const grad = g.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, '#2a3fa0'); grad.addColorStop(1, '#5a3ab8');
+  g.fillStyle = grad; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 26; i++) { g.fillStyle = `rgba(255,255,255,${.3 + Math.random() * .7})`; g.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
+  g.strokeStyle = '#8fb0ff'; g.lineWidth = 6; g.strokeRect(3, 3, w - 6, h - 6);
+  g.beginPath(); g.moveTo(w / 2, 0); g.lineTo(w / 2, h); g.stroke();
+});
+const windowMat = new THREE.MeshBasicMaterial({ map: windowTex });
+for (const x of [-46, -8]) {
+  const w = mesh(new THREE.PlaneGeometry(14, 10), windowMat, x, 19, FLOOR.back + .05);
+  w.castShadow = false;
+}
+const sideWindow = mesh(new THREE.PlaneGeometry(14, 10), windowMat, -FLOOR.w / 2 + .05, 19, 6);
+sideWindow.rotation.y = Math.PI / 2; sideWindow.castShadow = false;
+// Wall sign
+const signTex = canvasTexture(512, 96, (g, w, h) => {
+  g.fillStyle = '#0b1230'; g.fillRect(0, 0, w, h);
+  const grad = g.createLinearGradient(0, 0, w, 0);
+  grad.addColorStop(0, '#2D7BFF'); grad.addColorStop(1, '#B18CFF');
+  g.strokeStyle = grad; g.lineWidth = 6; g.strokeRect(3, 3, w - 6, h - 6);
+  g.font = '700 46px "Space Grotesk", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = grad; g.fillText('✦ PHOTO ARCHIVE', w / 2, h / 2 + 3);
+});
+mesh(new THREE.PlaneGeometry(22, 4.1), new THREE.MeshBasicMaterial({ map: signTex }), 47, 26.5, FLOOR.back + .1).castShadow = false;
+
+// --- Belt -------------------------------------------------------------------
+const beltTex = canvasTexture(128, 32, (g, w, h) => {
+  g.fillStyle = '#22336a'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#2f4383'; g.fillRect(0, 0, w / 2, h);
+});
+beltTex.wrapS = beltTex.wrapT = THREE.RepeatWrapping;
+beltTex.repeat.set(16, 1);
+const sideMat = mat(0x1a2858);
+mesh(new THREE.BoxGeometry(BELT.x1 - BELT.x0, BELT.top, BELT.width), [sideMat, sideMat, mat(0xffffff, { map: beltTex, roughness: .8 }), sideMat, sideMat, sideMat], 0, BELT.top / 2, 0);
+const rollers = [];
+for (let x = BELT.x0 + 5; x < BELT.x1; x += 10) {
+  const r = mesh(new THREE.CylinderGeometry(1.25, 1.25, BELT.width + .6, 16), mat(0x3a4c86, { metalness: .5 }), x, 1.3, 0);
+  r.rotation.x = Math.PI / 2;
+  rollers.push(r);
+}
+let beltMoving = 0;   // Number of photos moving on the belt
+
+// Stations: arch over the belt with a light bar in the channel color
+const stationLights = {};
+CHANNELS.forEach((ch) => {
+  const frame = mat(0x22356e, { metalness: .4, roughness: .4 });
+  mesh(new THREE.BoxGeometry(1.4, 22, 1.4), frame, ch.x, 11, -BELT.width / 2 - 2);
+  mesh(new THREE.BoxGeometry(1.4, 22, 1.4), frame, ch.x, 11, BELT.width / 2 + 2);
+  mesh(new THREE.BoxGeometry(1.6, 1.6, BELT.width + 6), frame, ch.x, 22.5, 0);
+  mesh(new THREE.BoxGeometry(.5, .5, BELT.width + 2), new THREE.MeshBasicMaterial({ color: ch.hex }), ch.x, 21.4, 0).castShadow = false;
+  label(ch.id.toUpperCase(), ch.hex).position.set(ch.x, 27, 0);
+  const light = new THREE.PointLight(ch.hex, 0, 30, 1.5);
+  light.position.set(ch.x, 10, 0);
+  scene.add(light);
+  stationLights[ch.id] = light;
+});
+
+// --- Furniture: photo archive shelf, filing cabinet, bookshelf, crates -----
+const wood = mat(0x2b3c7a, { roughness: .7 });
+const SHELF = { x0: 33, cols: 4, rows: 3, cellW: 7, cellH: 7.6, base: 1.2, back: FLOOR.back + .2, depth: 5 };
+const shelfW = SHELF.cols * SHELF.cellW + 1, shelfX = SHELF.x0 + shelfW / 2 - .5;
+const shelfFront = SHELF.back + SHELF.depth;
+mesh(new THREE.BoxGeometry(shelfW, SHELF.rows * SHELF.cellH + SHELF.base + 1, .6), mat(0x1c2a5c), shelfX, (SHELF.rows * SHELF.cellH + SHELF.base + 1) / 2, SHELF.back + .3);
+for (let r = 0; r <= SHELF.rows; r++) {
+  mesh(new THREE.BoxGeometry(shelfW, .6, SHELF.depth), wood, shelfX, SHELF.base + r * SHELF.cellH, SHELF.back + SHELF.depth / 2);
+}
+for (let c = 0; c <= SHELF.cols; c++) {
+  mesh(new THREE.BoxGeometry(.6, SHELF.rows * SHELF.cellH + .6, SHELF.depth), wood, SHELF.x0 + c * SHELF.cellW - .5, SHELF.base + SHELF.rows * SHELF.cellH / 2, SHELF.back + SHELF.depth / 2);
+}
+const slotPos = (i) => {
+  const c = i % SHELF.cols, r = SHELF.rows - 1 - Math.floor(i / SHELF.cols);   // Fill from the top row
+  return new THREE.Vector3(SHELF.x0 + c * SHELF.cellW + SHELF.cellW / 2 - .5, SHELF.base + r * SHELF.cellH + SHELF.cellH / 2 + .3, SHELF.back + 1.6);
+};
+const slots = new Array(SHELF.cols * SHELF.rows).fill(null);
+let nextSlot = 0;
+
+// Filing cabinet (drawers with handles)
+const cab = { x: 22, w: 9, h: 15, d: 6 };
+mesh(new THREE.BoxGeometry(cab.w, cab.h, cab.d), mat(0x2f437f, { metalness: .5, roughness: .35 }), cab.x, cab.h / 2, SHELF.back + cab.d / 2);
+for (let i = 0; i < 4; i++) {
+  const y = 2 + i * 3.5;
+  mesh(new THREE.BoxGeometry(cab.w - 1, 3, .3), mat(0x3a5296, { metalness: .5, roughness: .35 }), cab.x, y, SHELF.back + cab.d + .1);
+  mesh(new THREE.BoxGeometry(2.4, .5, .5), mat(0xc9d4ff, { metalness: .8, roughness: .2 }), cab.x, y + .6, SHELF.back + cab.d + .4);
+}
+
+// Bookshelf with books (left back)
+const books = { x0: -64, w: 16, rows: 3 };
+mesh(new THREE.BoxGeometry(books.w, 20, 4), mat(0x1c2a5c), books.x0 + books.w / 2, 10, SHELF.back + 2);
+const bookColors = [0x2D7BFF, 0x7B5CFF, 0xB18CFF, 0xFF3B5C, 0x2BE38A, 0xEAF0FF];
+for (let r = 0; r < books.rows; r++) {
+  const y = 1 + r * 6.5;
+  mesh(new THREE.BoxGeometry(books.w - .4, .5, 4.2), wood, books.x0 + books.w / 2, y, SHELF.back + 2.1);
+  let x = books.x0 + 1;
+  while (x < books.x0 + books.w - 2) {
+    const w = .9 + Math.random() * .8, h = 3.5 + Math.random() * 2;
+    mesh(new THREE.BoxGeometry(w, h, 3), mat(bookColors[Math.floor(Math.random() * bookColors.length)], { roughness: .6 }),
+      x + w / 2, y + .25 + h / 2, SHELF.back + 2.3);
+    x += w + .15;
+  }
+}
+
+// Crates and paper stack
+mesh(new THREE.BoxGeometry(7, 5, 7), mat(0x2a3d78), -59, 2.5, 25);
+mesh(new THREE.BoxGeometry(5, 4, 5), mat(0x33488a), -59, 7, 25);
+mesh(new THREE.BoxGeometry(9, 2.5, 13), mat(0xeef1fa), -40, 1.25, -21);
+mesh(new THREE.BoxGeometry(8.4, 2, 12.4), mat(0xffffff), -40, 3.5, -21);
+
+// --- Droids ----------------------------------------------------------------
+const skin = canvasTexture(64, 256, (g, w, h) => {
+  const grad = g.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#5aa2ff'); grad.addColorStop(.5, '#6f63ff'); grad.addColorStop(1, '#9a62ff');
+  g.fillStyle = grad; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 40; i++) {  // Galaxy sparkles
+    g.fillStyle = `rgba(255,255,255,${Math.random() * .6})`;
+    g.fillRect(Math.random() * w, Math.random() * h, 1.5, 1.5);
+  }
+});
+const starTex = canvasTexture(64, 64, (g) => {
+  g.fillStyle = '#ffffff'; g.shadowColor = '#d9c8ff'; g.shadowBlur = 10;
+  g.beginPath();
+  const c = 32, s = 22, k = 6;
+  g.moveTo(c, c - s); g.lineTo(c + k, c - k); g.lineTo(c + s, c); g.lineTo(c + k, c + k);
+  g.lineTo(c, c + s); g.lineTo(c - k, c + k); g.lineTo(c - s, c); g.lineTo(c - k, c - k); g.closePath(); g.fill();
+});
+
+const DROID_SCALE = 1.3;
+function makeDroid(accent) {
+  const body = new THREE.MeshStandardMaterial({ map: skin, roughness: .3, metalness: .05, emissive: 0x3a2fb0, emissiveIntensity: .45 });
+  const root = new THREE.Group();          // Position on the floor, heading
+  const rig = new THREE.Group();           // Bounce / lean
+  root.add(rig);
+  scene.add(root);
+
+  const legs = [-1, 1].map((side) => {
+    const hip = new THREE.Group();
+    hip.position.set(side, 2, 0);
+    mesh(new THREE.CapsuleGeometry(.62, .9, 4, 10), body, 0, -.9, 0, hip);
+    rig.add(hip);
+    return hip;
+  });
+  // Barrel body like the mascot: wide belly, flat top as wide as the head
+  const profile = [[0, 0], [1.4, .05], [2.1, .3], [2.5, .8], [2.66, 1.6], [2.66, 2.6], [2.6, 3.6], [2.52, 4.25], [2.42, 4.55], [0, 4.6]]
+    .map(([r, y]) => new THREE.Vector2(r, y));
+  mesh(new THREE.LatheGeometry(profile, 40), body, 0, 1.5, 0, rig);
+  const chest = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 2.1), new THREE.MeshBasicMaterial({ map: starTex, transparent: true }));
+  chest.position.set(0, 3.9, 2.69); rig.add(chest);
+  if (accent) {  // Belt in the channel color
+    const belt = mesh(new THREE.TorusGeometry(2.53, .2, 8, 40), new THREE.MeshBasicMaterial({ color: accent }), 0, 2.4, 0, rig);
+    belt.rotation.x = Math.PI / 2;
+  }
+  // Head on the body with the dark seam of the mascot, no neck gap
+  mesh(new THREE.CylinderGeometry(2.36, 2.36, .24, 40), new THREE.MeshStandardMaterial({ color: 0x1b1650, roughness: .6 }), 0, 6.2, 0, rig);
+
+  const head = new THREE.Group();
+  head.position.set(0, 6.3, 0);
+  rig.add(head);
+  mesh(new THREE.SphereGeometry(2.42, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), body, 0, 0, 0, head);
+  const base = mesh(new THREE.CircleGeometry(2.42, 40), body, 0, 0, 0, head);
+  base.rotation.x = Math.PI / 2;
+  const eyeMat = new THREE.MeshStandardMaterial({ color: 0x0a0f2a, roughness: .2 });
+  const shine = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  for (const x of [-.85, .85]) {
+    mesh(new THREE.SphereGeometry(.38, 16, 12), eyeMat, x, .95, 1.95, head);
+    mesh(new THREE.SphereGeometry(.12, 8, 8), shine, x + .12, 1.1, 2.3, head);
+  }
+  const antennas = [-1, 1].map((side) => {
+    const a = new THREE.Group();
+    a.position.set(side * 1.05, 1.9, 0);
+    a.rotation.z = -side * .45;
+    mesh(new THREE.CapsuleGeometry(.16, 1.3, 4, 8), body, 0, .8, 0, a);
+    head.add(a);
+    return a;
+  });
+
+  const arms = [-1, 1].map((side) => {
+    const pivot = new THREE.Group();
+    pivot.position.set(side * 2.85, 5.2, 0);
+    mesh(new THREE.CapsuleGeometry(.55, 2, 4, 10), body, 0, -1.45, 0, pivot);
+    rig.add(pivot);
+    return pivot;
+  });
+
+  let nozzle = null;
+  if (accent) {  // Spray gun in the right hand, nozzle in the channel color
+    const gun = new THREE.Group();
+    gun.position.set(0, -2.7, .4);
+    mesh(new THREE.BoxGeometry(.8, .9, 1.8), mat(0xdfe6ff, { metalness: .6, roughness: .3 }), 0, 0, .3, gun);
+    mesh(new THREE.CylinderGeometry(.5, .5, .9, 12), new THREE.MeshBasicMaterial({ color: accent }), 0, .75, -.2, gun);
+    nozzle = mesh(new THREE.ConeGeometry(.35, .8, 12), new THREE.MeshBasicMaterial({ color: accent }), 0, 0, 1.55, gun);
+    nozzle.rotation.x = Math.PI / 2;
+    arms[1].add(gun);
+  }
+  root.scale.setScalar(DROID_SCALE);
+  return { root, rig, head, antennas, arms, legs, nozzle, mode: 'idle', walking: false, phase: Math.random() * 10, aim: 0, carrying: null };
+}
+
+const droids = [];
+const painters = {};
+CHANNELS.forEach((ch) => {
+  const d = makeDroid(ch.hex);
+  d.root.position.set(ch.x - 8.5, 0, -BELT.width / 2 - 4.5);
+  d.root.rotation.y = .55;
+  painters[ch.id] = d;
+  droids.push(d);
+});
+const loader = makeDroid(null);
+loader.root.position.set(BELT.x0 + 4, 0, -BELT.width / 2 - 6);
+droids.push(loader);
+const cheer = makeDroid(null);
+cheer.root.position.set(-8, 0, BELT.width / 2 + 13);
+cheer.root.rotation.y = .7;
+droids.push(cheer);
+// Carriers: file the revealed photos in the archive shelf, one photo each
+// Spread across the view (x up, z down) so they do not hide each other
+const CARRIER_HOMES = [[18, 31], [29, 31], [40, 31]];
+// Way out: the aisle between the belt and the homes. Way back: to the end of
+// the row, then the lane behind the waiting carriers (front edge of the
+// floor), stepping into the home from behind: the two ways never cross.
+const HOME_AISLE_Z = 18.5;
+const BACK_LANE_Z = FLOOR.front - 3;
+const carriers = CARRIER_HOMES.map(([x, z]) => {
+  const d = makeDroid(null);
+  d.root.position.set(x, 0, z);
+  d.root.rotation.y = Math.PI;      // Facing the belt
+  d.home = new THREE.Vector3(x, 0, z);
+  d.busy = false;
+  d.lastUsed = 0;
+  droids.push(d);
+  return d;
+});
+const carrierWaiters = [];
+// The free carrier idle for the longest time takes the next photo, so that
+// they all work in turn
+function acquireCarrier() {
+  const free = carriers.filter((c) => !c.busy).sort((a, b) => a.lastUsed - b.lastUsed)[0];
+  if (free) { free.busy = true; free.lastUsed = performance.now(); return Promise.resolve(free); }
+  return new Promise((resolve) => carrierWaiters.push(resolve));
+}
+function releaseCarrier(c) {
+  const next = carrierWaiters.shift();
+  if (next) { c.lastUsed = performance.now(); next(c); } else c.busy = false;
+}
+
+// Per frame motions of the droids
+function animateDroid(d, t) {
+  const p = t + d.phase;
+  const [left, right] = d.arms;
+  d.antennas.forEach((a, i) => { a.rotation.x = Math.sin(p * 3 + i) * .12; });
+  d.legs.forEach((leg) => { leg.rotation.x = 0; });
+  if (d.walking) {
+    const s = Math.sin(t * 11 + d.phase);
+    d.legs[0].rotation.x = s * .65;
+    d.legs[1].rotation.x = -s * .65;
+    d.rig.position.y = Math.abs(Math.cos(t * 11 + d.phase)) * .35;
+    d.rig.rotation.z = s * .05;
+    d.head.rotation.set(0, 0, 0);
+    if (d.carrying) {
+      left.rotation.set(-1.35, 0, .25); right.rotation.set(-1.35, 0, -.25);
+    } else {
+      left.rotation.set(-s * .55, 0, -.12); right.rotation.set(s * .55, 0, .12);
+    }
+    return;
+  }
+  if (d.mode === 'idle' && d.gestureUntil > t) {     // Waving to the room
+    d.rig.position.y = Math.abs(Math.sin(p * 1.8)) * .2;
+    d.head.rotation.set(-.1, Math.sin(p * 2) * .2, 0);
+    left.rotation.set(0, 0, -.15);
+    right.rotation.set(0, 0, 2.5 + Math.sin(t * 12) * .35);
+  } else if (d.mode === 'idle') {
+    d.rig.position.y = Math.abs(Math.sin(p * 1.8)) * .25;
+    d.rig.rotation.z = Math.sin(p * 1.8) * .03;
+    d.head.rotation.y = Math.sin(p * .6) * .45;
+    d.head.rotation.x = 0;
+    left.rotation.set(Math.sin(p * 1.8) * .15, 0, -.12);
+    right.rotation.set(-Math.sin(p * 1.8) * .15, 0, .12);
+  } else if (d.mode === 'spray') {
+    d.rig.position.y = Math.abs(Math.sin(p * 9)) * .18;
+    d.rig.rotation.x = .12;
+    d.head.rotation.x = .35;
+    d.head.rotation.y = .25 - d.aim * .5 + Math.sin(p * 9) * .03;
+    right.rotation.set(-1.25 + Math.sin(p * 16) * .05, .45 - d.aim * .9, 0);
+    left.rotation.set(-.4 + Math.sin(p * 6) * .2, 0, -.35);
+  } else if (d.mode === 'carry') {
+    d.rig.position.y = Math.abs(Math.sin(p * 4)) * .15;
+    d.head.rotation.x = .2; d.head.rotation.y = 0;
+    left.rotation.set(-1.35 + d.aim * .9, 0, .25);
+    right.rotation.set(-1.35 + d.aim * .9, 0, -.25);
+  } else if (d.mode === 'lift') {          // Arms raised to put the photo on a shelf
+    d.rig.position.y = 0; d.head.rotation.set(-.25, 0, 0);
+    left.rotation.set(-1.35 - d.aim * 1.1, 0, .2);
+    right.rotation.set(-1.35 - d.aim * 1.1, 0, -.2);
+  } else if (d.mode === 'cheer') {
+    d.rig.position.y = Math.abs(Math.sin(p * 7)) * 2.2;
+    d.head.rotation.x = -.2; d.head.rotation.y = Math.sin(p * 7) * .2;
+    left.rotation.set(0, 0, -2.6 + Math.sin(p * 14) * .25);
+    right.rotation.set(0, 0, 2.6 - Math.sin(p * 14) * .25);
+  }
+  if (d.mode !== 'spray') d.rig.rotation.x = 0;
+}
+
+// Walk a droid along a path of floor points, facing its way
+// Walking with steering: each frame the droid heads to its next waypoint and
+// steers around the droids ahead of it (passing on its right, slowing down
+// when very close), never entering the belt nor leaving the floor.
+const walkers = new Set();
+// Droids are ~7 units wide (body radius 2.66 x scale 1.3): keep the centers 7.5 apart
+const AVOID_RADIUS = 14, PERSONAL = 9.5, MIN_GAP = 7.5;
+function walk(d, points) {
+  return new Promise((resolve) => {
+    d.path = points.map(([x, z]) => new THREE.Vector3(x, 0, z));
+    d.onArrive = resolve;
+    d.walking = true;
+    walkers.add(d);
+  });
+}
+const _to = new THREE.Vector3(), _off = new THREE.Vector3(), _steer = new THREE.Vector3(), _perp = new THREE.Vector3();
+function stepWalkers(dt) {
+  for (const d of walkers) {
+    const pos = d.root.position;
+    _to.subVectors(d.path[0], pos); _to.y = 0;
+    const dist = _to.length();
+    if (dist < .4) {
+      d.path.shift();
+      d.progressAt = undefined;
+      if (!d.path.length) { walkers.delete(d); d.walking = false; d.onArrive(); }
+      continue;
+    }
+    const dir = _to.divideScalar(dist);
+    _steer.copy(dir);
+    // Safety net: no progress for 1 s (blocked by a standing droid) -> walk
+    // through the others for a moment instead of staying stuck
+    const now = clock.elapsedTime;
+    if (d.progressAt === undefined || dist < d.progressDist - .5) { d.progressAt = now; d.progressDist = dist; }
+    if (now - d.progressAt > 1) {
+      d.ghostUntil = now + 1.2; d.progressAt = now; d.progressDist = dist;
+      if (DEBUG) window.__ghosts = (window.__ghosts || 0) + 1;
+    }
+    const ghost = d.ghostUntil > now;
+    _perp.set(-dir.z, 0, dir.x);                       // 90 deg to the left of the way
+    let slow = 1;
+    for (const o of droids) {
+      if (o === d || ghost) continue;
+      _off.subVectors(o.root.position, pos); _off.y = 0;
+      const r = _off.length();
+      if (r < .001 || r > AVOID_RADIUS) continue;
+      const ahead = _off.dot(dir) / r;
+      if (ahead < -.2) continue;                        // Behind: ignore
+      const w = (AVOID_RADIUS - r) / AVOID_RADIUS;
+      // Obstacle on the left of the way -> go right, and the other way round;
+      // head-on: both keep to their right and pass each other
+      const side = dir.x * _off.z - dir.z * _off.x;
+      const away = Math.abs(side) < .3 ? -1 : -Math.sign(side);
+      _steer.addScaledVector(_perp, away * w * 1.8);
+      _steer.addScaledVector(_off, -w * .9 / r);
+      if (r < PERSONAL && ahead > .3) {
+        // The one carrying a photo has the way; the other one waits a bit more
+        slow = Math.min(slow, d.carrying || !o.walking ? .35 : .12);
+      }
+    }
+    _steer.y = 0;
+    _steer.normalize();
+    pos.addScaledVector(_steer, Math.min(WALK_SPEED * slow * dt, dist));
+    // Hard separation: never overlap another droid (only the walker moves)
+    for (const o of droids) {
+      if (o === d || ghost) continue;
+      _off.subVectors(pos, o.root.position); _off.y = 0;
+      const r = _off.length();
+      if (r < MIN_GAP && r > .001) pos.addScaledVector(_off, (MIN_GAP - r) / r);
+    }
+    // Keep out of the belt (with a margin) and on the floor
+    const margin = BELT.width / 2 + 3;
+    if (pos.x > BELT.x0 - 3 && pos.x < BELT.x1 + 3 && Math.abs(pos.z) < margin) {
+      pos.z = Math.sign(pos.z || 1) * margin;
+    }
+    pos.x = THREE.MathUtils.clamp(pos.x, -FLOOR.w / 2 + 3, FLOOR.w / 2 - 3);
+    pos.z = THREE.MathUtils.clamp(pos.z, shelfFront + 2.5, FLOOR.front - 3);
+    // Turn smoothly toward the moving direction
+    const heading = Math.atan2(_steer.x, _steer.z);
+    let dh = heading - d.root.rotation.y;
+    dh = Math.atan2(Math.sin(dh), Math.cos(dh));
+    d.root.rotation.y += dh * Math.min(1, dt * 10);
+  }
+}
+async function face(d, heading, ms = 250) {
+  const h0 = d.root.rotation.y;
+  let dh = heading - h0;
+  dh = Math.atan2(Math.sin(dh), Math.cos(dh));
+  await tween(ms, (p) => { d.root.rotation.y = h0 + dh * p; });
+}
+
+// A carried photo: tray-like in front of the droid, following its heading
+const HOLD_TILT = .2;
+function holdPose(d, sheet) {
+  const yaw = d.root.rotation.y;
+  const forward = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
+  const reach = DROID_SCALE * 2.6 + Math.cos(HOLD_TILT) * SHEET.h * sheet.scale.y / 2;
+  const pos = d.root.position.clone().addScaledVector(forward, reach);
+  pos.y = 6.4 + d.rig.position.y * DROID_SCALE;
+  return { pos, rot: new THREE.Euler(FLAT.x + HOLD_TILT, yaw, 0, 'YXZ') };
+}
+
+// --- Spray particles -------------------------------------------------------
+const MAX = 260;
+const spray = {};
+CHANNELS.forEach((ch) => {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(MAX * 3), 3));
+  const points = new THREE.Points(geo, new THREE.PointsMaterial({ color: ch.hex, size: 7, sizeAttenuation: false,
+    transparent: true, opacity: .9, blending: THREE.AdditiveBlending, depthWrite: false }));
+  scene.add(points);
+  spray[ch.id] = { geo, vel: new Float32Array(MAX * 3), life: new Float32Array(MAX), next: 0, on: false, target: new THREE.Vector3() };
+});
+const tmp = new THREE.Vector3();
+function updateSpray(dt) {
+  for (const ch of CHANNELS) {
+    const s = spray[ch.id], pos = s.geo.attributes.position.array;
+    if (s.on) {
+      painters[ch.id].nozzle.getWorldPosition(tmp);
+      for (let k = 0; k < 6; k++) {
+        const i = s.next; s.next = (s.next + 1) % MAX;
+        pos.set([tmp.x, tmp.y, tmp.z], i * 3);
+        const dir = s.target.clone().add(new THREE.Vector3((Math.random() - .5) * 3, 0, (Math.random() - .5) * 3)).sub(tmp);
+        dir.normalize().multiplyScalar(22 + Math.random() * 10);
+        s.vel.set([dir.x, dir.y, dir.z], i * 3);
+        s.life[i] = .55;
+      }
+    }
+    for (let i = 0; i < MAX; i++) {
+      if (s.life[i] > 0) {
+        s.life[i] -= dt;
+        pos[i * 3] += s.vel[i * 3] * dt; pos[i * 3 + 1] += s.vel[i * 3 + 1] * dt; pos[i * 3 + 2] += s.vel[i * 3 + 2] * dt;
+        if (pos[i * 3 + 1] < BELT.top + .2 || s.life[i] <= 0) { s.life[i] = 0; pos[i * 3 + 1] = -100; }
+      }
+    }
+    s.geo.attributes.position.needsUpdate = true;
+  }
+}
+
+// --- Sheet: paper + R, G, B channels wiped in by the sprays ----------------
+const sheetMaterial = (texture) => new THREE.ShaderMaterial({
+  uniforms: { map: { value: texture }, pr: { value: 0 }, pg: { value: 0 }, pb: { value: 0 }, opacity: { value: 1 } },
+  transparent: true, side: THREE.DoubleSide,
+  vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `
+    uniform sampler2D map; uniform float pr, pg, pb, opacity; varying vec2 vUv;
+    void main() {
+      vec2 m = vec2(0.045, 0.03);                      // White photo border
+      if (vUv.x < m.x || vUv.x > 1.0 - m.x || vUv.y < m.y || vUv.y > 1.0 - m.y) {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, opacity);
+      } else {
+        vec2 uv = (vUv - m) / (1.0 - 2.0 * m);
+        vec3 t = texture2D(map, uv).rgb;
+        float y = 1.0 - uv.y;                          // Wipe from the far edge
+        float r = step(y, pr), g = step(y, pg), b = step(y, pb);
+        vec3 paper = mix(vec3(0.95, 0.96, 0.99), vec3(0.89, 0.91, 0.96), step(0.85, fract(uv.y * 28.0)));
+        vec3 ink = vec3(t.r * r, t.g * g, t.b * b);
+        gl_FragColor = vec4(mix(paper, ink, r), opacity);
+      }
+      #include <colorspace_fragment>
+    }`,
+});
+const textureLoader = new THREE.TextureLoader();
+
+// --- HTML effects ------------------------------------------------------------
+function setStatus(line1, line2, color) {
+  const style = color ? ` style="color:${color};-webkit-text-fill-color:${color}"` : '';
+  $('status').innerHTML = `${line1}<br><span class="grad"${style}>${line2}</span>`;
+}
+function confetti(x = 960, y = 520) {
+  const colors = ['#FF3B5C', '#2BE38A', '#2D7BFF', '#B18CFF', '#EAF0FF'];
+  for (let i = 0; i < 44; i++) {
+    const e = document.createElement('span');
+    e.className = 'confetti'; e.textContent = ['✦', '✧', '★'][i % 3];
+    Object.assign(e.style, { left: `${x}px`, top: `${y}px`, color: colors[i % colors.length] });
+    stage.appendChild(e);
+    const a = (Math.PI * 2 * i) / 44 + Math.random() * .5, d = 200 + Math.random() * 500;
+    e.animate([{ transform: 'translate(0,0) scale(.4)', opacity: 1 },
+      { transform: `translate(${Math.cos(a) * d}px, ${Math.sin(a) * d - 60}px) scale(1.2) rotate(${Math.random() * 360}deg)`, opacity: 0 }],
+      { duration: 1000 + Math.random() * 700, easing: 'cubic-bezier(.22,.61,.36,1)' }).onfinish = () => e.remove();
+  }
+}
+function setDim(on) {
+  stage.classList.toggle('dim', on);
+  // Light dimming: the factory keeps working (and stays visible) behind the photo
+  return tween(700, (p) => LIGHTS.forEach(([light, base]) => { light.intensity = base * (on ? 1 - .5 * p : .5 + .5 * p); }));
+}
+let inFactory = 0;
+function setCount(delta) {
+  inFactory += delta;
+  $('count').textContent = String(inFactory);
+  if (inFactory === 0) setStatus('사진을 찍으면', '여기서 인쇄돼요');   // Idle factory
+}
+
+// --- Pipeline ------------------------------------------------------------------
+const FLAT = new THREE.Euler(-Math.PI / 2, 0, 0);
+const onBelt = (x) => new THREE.Vector3(x, BELT.top + .05, 0);
+const locks = { belt: new Lock() };
+// The caption goes under the revealed photo, with the same width
+Object.assign($('caption').style, { left: `${REVEAL.left}px`, width: `${REVEAL.width}px`,
+  top: `${REVEAL.top + REVEAL.height + 20}px` });
+
+async function slide(sheet, from, to, ms) {
+  beltMoving++;
+  await tween(ms, (p) => { sheet.position.x = from + (to - from) * p; });
+  beltMoving--;
+}
+
+async function paint(sheet, ch, index) {
+  const d = painters[ch.id], s = spray[ch.id];
+  setStatus(`${index + 1}번 드로이드가`, `${ch.name} 뿌리는 중`, ch.hex);
+  $(`chip-${ch.id}`).classList.add('on');
+  d.mode = 'spray'; s.on = true;
+  await tween(PAINT, (p) => {
+    sheet.material.uniforms['p' + ch.id].value = p;
+    d.aim = p;
+    s.target.set(sheet.position.x, BELT.top, -SHEET.h / 2 + SHEET.h * p);
+    stationLights[ch.id].intensity = 140 * Math.min(1, p * 4, (1 - p) * 4 + .3);
+  }, ease.linear);
+  s.on = false; d.mode = 'idle'; d.aim = 0;
+  stationLights[ch.id].intensity = 0;
+  $(`chip-${ch.id}`).classList.remove('on');
+}
+
+async function loadSheet(sheet) {
+  loader.mode = 'carry'; loader.aim = 0;
+  const reach = DROID_SCALE * 2.6;
+  const hands = new THREE.Vector3(loader.root.position.x, 6.4,
+    loader.root.position.z + reach + Math.cos(HOLD_TILT) * SHEET.h / 2);
+  const start = onBelt(BELT.x0 + 6);
+  sheet.position.copy(hands);
+  sheet.rotation.set(FLAT.x + HOLD_TILT, 0, 0);
+  sheet.visible = true;
+  await tween(400, (p) => { sheet.material.uniforms.opacity.value = p; });
+  await sleep(250);
+  await tween(1000, (p) => {
+    loader.aim = p;
+    sheet.position.lerpVectors(hands, start, p);
+    sheet.position.y += Math.sin(p * Math.PI) * 1.5;
+    sheet.rotation.x = FLAT.x + HOLD_TILT * (1 - p);
+  });
+  loader.mode = 'idle';
+  return start.x;
+}
+
+async function reveal(sheet) {
+  cheer.mode = 'cheer';
+  const from = sheet.position.clone(), fromQ = sheet.quaternion.clone();
+  const toQ = camera.quaternion.clone();
+  // Big photo on the left of the screen, its caption right under it (REVEAL
+  // box in px of the 1920x1080 stage)
+  const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+  const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+  const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+  const px = 1080 / VIEW_H;                     // Screen px per world unit
+  const cx = REVEAL.left + REVEAL.width / 2, cy = REVEAL.top + REVEAL.height / 2;
+  const to = TARGET.clone().addScaledVector(dir, -60)
+    .addScaledVector(right, (cx - 960) / px)
+    .addScaledVector(up, (540 - cy) / px);
+  const toScale = REVEAL.height / px / SHEET.h;
+  setStatus('완성!', '함께 다음 차원으로');
+  setDim(true);
+  setTimeout(() => confetti(cx, cy), 500);
+  sheet.renderOrder = 10;
+  await tween(1200, (p) => {
+    sheet.position.lerpVectors(from, to, p);
+    sheet.position.y += Math.sin(p * Math.PI) * 6;
+    sheet.quaternion.slerpQuaternions(fromQ, toQ, p);
+    sheet.scale.setScalar(1 + (toScale - 1) * p);
+  }, ease.back);
+  $('caption').classList.add('show');
+  await sleep(HOLD);
+  $('caption').classList.remove('show');
+
+  // Back down onto the pickup tray at the end of the belt, smaller
+  setStatus('사진을', '보관함에 정리해요');
+  setDim(false);
+  const big = sheet.position.clone(), bigQ = sheet.quaternion.clone();
+  const tray = onBelt(PICKUP_X), trayQ = new THREE.Quaternion().setFromEuler(FLAT);
+  await tween(900, (p) => {
+    sheet.position.lerpVectors(big, tray, p);
+    sheet.position.y += Math.sin(p * Math.PI) * 4;
+    sheet.quaternion.slerpQuaternions(bigQ, trayQ, p);
+    sheet.scale.setScalar(toScale + (CARRY_SCALE - toScale) * p);
+  }, ease.inOut);
+  sheet.renderOrder = 0;
+  cheer.mode = 'idle';
+}
+
+// The carrier goes to the end of the belt ahead of the photo and waits there
+async function goToPickup(carrier) {
+  await walk(carrier, [[carrier.home.x, HOME_AISLE_Z], [PICKUP_X, BELT.width / 2 + 5]]);
+  await face(carrier, Math.PI);
+  if (DEBUG) (window.__log = window.__log || []).push(['carrier at belt end', Math.round(clock.elapsedTime * 10) / 10]);
+  return carrier;
+}
+
+async function file(sheet, carrier) {
+  // Pick up the photo on the tray at the end of the belt
+  carrier.mode = 'carry'; carrier.aim = .6;
+  await sleep(150);
+  const from = sheet.position.clone(), fromQ = sheet.quaternion.clone();
+  const pose = holdPose(carrier, sheet);
+  await tween(450, (p) => {
+    carrier.aim = .6 * (1 - p);
+    sheet.position.lerpVectors(from, pose.pos, p);
+    sheet.quaternion.slerpQuaternions(fromQ, new THREE.Quaternion().setFromEuler(pose.rot), p);
+  });
+  carrier.carrying = sheet;           // From now on the photo follows the hands
+  carrier.mode = 'idle';
+
+  // Take a free slot of the archive shelf (the oldest photo is replaced)
+  const slot = nextSlot;
+  nextSlot = (nextSlot + 1) % slots.length;
+  const target = slotPos(slot);
+
+  // Walk around the belt end, then along the shelf
+  const aisleZ = shelfFront + 4.5;
+  await walk(carrier, [[BELT.x1 + 5, BELT.width / 2 + 5], [BELT.x1 + 5, aisleZ], [target.x, aisleZ]]);
+  await face(carrier, Math.PI);
+
+  // Put the photo on the shelf, standing, facing the room
+  carrier.carrying = null;
+  carrier.mode = 'lift'; carrier.aim = 0;
+  const old = slots[slot];
+  if (old) {
+    old.renderOrder = 1;
+    tween(300, (p) => { old.material.uniforms.opacity.value = 1 - p; }).then(() => {
+      scene.remove(old); old.geometry.dispose(); old.material.uniforms.map.value.dispose(); old.material.dispose();
+    });
+  }
+  const start = sheet.position.clone(), startQ = sheet.quaternion.clone();
+  const slotScale = (SHELF.cellH - 1.4) / SHEET.h;
+  await tween(800, (p) => {
+    carrier.aim = Math.sin(p * Math.PI);
+    sheet.position.lerpVectors(start, target, p);
+    sheet.quaternion.slerpQuaternions(startQ, new THREE.Quaternion(), p);
+    sheet.scale.setScalar(CARRY_SCALE + (slotScale - CARRY_SCALE) * p);
+  });
+  slots[slot] = sheet;
+  carrier.mode = 'idle';
+  setCount(-1);
+
+  // Back home
+  await walk(carrier, [[BELT.x1 + 5, aisleZ], [BELT.x1 + 5, BACK_LANE_Z], [carrier.home.x, BACK_LANE_Z], [carrier.home.x, carrier.home.z]]);
+  await face(carrier, Math.PI);
+}
+
+// One photo through the whole factory. The belt prints one photo at a time:
+// the next one is loaded once the previous one, revealed and back on the tray,
+// has been picked up by its carrier (the 'belt' lock keeps the arrival order).
+async function process(src) {
+  setCount(1);
+  const texture = await textureLoader.loadAsync(src);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const sheet = new THREE.Mesh(new THREE.PlaneGeometry(SHEET.w, SHEET.h), sheetMaterial(texture));
+  sheet.visible = false;
+  scene.add(sheet);
+
+  const freeBelt = await locks.belt.acquire();
+  setStatus('방금 찍은 사진을', '인쇄하고 있어요');
+  let x = await loadSheet(sheet);
+  let carrierReady = null;
+  for (let i = 0; i < CHANNELS.length; i++) {
+    await slide(sheet, x, CHANNELS[i].x, i === 0 ? 1000 : 700);
+    x = CHANNELS[i].x;
+    // A carrier sets off during the green pass, to be at the end of the belt
+    // before the photo
+    if (i === CHANNELS.length - 2) carrierReady = acquireCarrier().then(goToPickup);
+    await paint(sheet, CHANNELS[i], i);
+  }
+
+  setStatus('RGB 완성!', '사진이 나오고 있어요');
+  await slide(sheet, x, PICKUP_X, 800);
+  if (DEBUG) (window.__log = window.__log || []).push(['photo at belt end', Math.round(clock.elapsedTime * 10) / 10]);
+  await reveal(sheet);
+
+  const carrier = await carrierReady;
+  const filing = file(sheet, carrier);
+  // The belt is free for the next photo once this one is lifted from the tray
+  await new Promise((r) => { const check = () => (carrier.carrying === sheet ? r() : requestAnimationFrame(check)); check(); });
+  freeBelt();
+  await filing;
+  releaseCarrier(carrier);
+}
+
+// --- Render loop -------------------------------------------------------------
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+  if (beltMoving > 0) {
+    beltTex.offset.x -= dt * 1.8;
+    rollers.forEach((r) => { r.rotation.y -= dt * 6; });
+  }
+  stepWalkers(dt);
+  for (const d of droids) {           // Idle droids wave now and then
+    if (d.nextGesture === undefined) d.nextGesture = t + 2 + Math.random() * 8;
+    if (!d.walking && d.mode === 'idle' && t > d.nextGesture) {
+      d.gestureUntil = t + 1.6;
+      d.nextGesture = t + 6 + Math.random() * 8;
+    }
+  }
+  droids.forEach((d) => animateDroid(d, t));
+  if (DEBUG) {                        // ?debug: closest distance between a walking droid and another one
+    for (const d of walkers) for (const o of droids) {
+      if (o !== d) window.__minDist = Math.min(window.__minDist ?? 99, d.root.position.distanceTo(o.root.position));
+    }
+    // Furthest z reached by a carrier going home (the lane behind the homes)
+    for (const c of carriers) if (c.walking) window.__maxZ = Math.max(window.__maxZ ?? -99, c.root.position.z);
+  }
+  for (const c of carriers) {          // Carried photos follow the carriers
+    if (c.carrying) {
+      const pose = holdPose(c, c.carrying);
+      c.carrying.position.copy(pose.pos);
+      c.carrying.rotation.copy(pose.rot);
+    }
+  }
+  updateSpray(dt);
+  renderer.render(scene, camera);
+});
+
+// Photos waiting to enter the factory (at most MAX_IN_FACTORY inside)
+const pending = [];
+function feed() {
+  while (pending.length && inFactory < MAX_IN_FACTORY) {
+    process(pending.shift()).catch((e) => console.error(e)).finally(feed);
+  }
+}
+
+// The server lists the pictures of its folder by file time (microseconds):
+// 'latest' is a time cursor, valid across pibooth restarts
+async function fetchPhotos(after) {
+  const res = await fetch(`api/photos?after=${after}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+(async function start() {
+  let latest;
+  try {
+    latest = (await fetchPhotos(-1)).latest;   // Only the pictures added from now on
+  } catch {
+    // No booth server: demo feed with the sample pictures
+    let i = 0;
+    const arrive = () => { pending.push(PHOTOS[i++ % PHOTOS.length]); feed(); };
+    arrive();
+    setTimeout(arrive, 4000);
+    setInterval(arrive, ARRIVAL);
+    return;
+  }
+  setInterval(async () => {
+    try {
+      const data = await fetchPhotos(latest);
+      for (const photo of data.photos) pending.push(photo.url);
+      latest = data.latest;
+      feed();
+    } catch (e) {
+      console.warn('Photo feed unavailable', e);  // Booth restarting: retry on next poll
+    }
+  }, POLL);
+})();
+</script>
+</body>
+</html>

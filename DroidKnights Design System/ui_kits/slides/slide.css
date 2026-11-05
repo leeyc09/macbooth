@@ -1,0 +1,24 @@
+/* DroidKnights slide template — 1920×1080, 3-layer: base → starfield → content.
+   Each slide HTML links ../../styles.css then this file. */
+.dk-stage{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--dk-bg);font-family:var(--dk-font-body);color:var(--dk-text)}
+/* starfield layer */
+.dk-stars{position:absolute;inset:0;pointer-events:none;
+  background-image:
+    radial-gradient(1.5px 1.5px at 20% 24%, rgba(255,255,255,.9), transparent),
+    radial-gradient(1.5px 1.5px at 68% 14%, rgba(255,255,255,.7), transparent),
+    radial-gradient(2px 2px at 82% 40%, rgba(177,140,255,.9), transparent),
+    radial-gradient(1px 1px at 42% 62%, rgba(255,255,255,.7), transparent),
+    radial-gradient(1.5px 1.5px at 88% 72%, rgba(255,255,255,.6), transparent),
+    radial-gradient(1px 1px at 12% 80%, rgba(45,123,255,.9), transparent),
+    radial-gradient(1.5px 1.5px at 55% 88%, rgba(255,255,255,.6), transparent);}
+.dk-glow-bg{position:absolute;border-radius:50%;filter:blur(120px);opacity:.55;pointer-events:none}
+.dk-content{position:absolute;inset:0;padding:var(--dk-slide-pad-y) var(--dk-slide-pad-x);display:flex;flex-direction:column;z-index:2}
+/* type helpers */
+.dk-eyebrow{display:inline-flex;align-items:center;gap:14px;font-family:var(--dk-font-display);font-weight:600;font-size:26px;letter-spacing:.22em;text-transform:uppercase;color:var(--dk-lavender)}
+.dk-hero{font-weight:900;font-size:108px;line-height:1.04;letter-spacing:-.02em;margin:0}
+.dk-title{font-weight:900;font-size:72px;line-height:1.08;letter-spacing:-.02em;margin:0}
+.dk-body{font-weight:400;font-size:34px;line-height:1.55;color:var(--dk-text-dim);max-width:1200px}
+.dk-grad-text{background:var(--dk-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.dk-spark{filter:drop-shadow(0 2px 12px rgba(123,92,255,.7))}
+.dk-foot{position:absolute;left:var(--dk-slide-pad-x);bottom:52px;display:flex;align-items:center;gap:16px;font-family:var(--dk-font-mono);font-size:22px;color:var(--dk-text-muted);z-index:2}
+.dk-pageno{position:absolute;right:var(--dk-slide-pad-x);bottom:52px;font-family:var(--dk-font-mono);font-size:22px;color:var(--dk-text-muted);z-index:2}

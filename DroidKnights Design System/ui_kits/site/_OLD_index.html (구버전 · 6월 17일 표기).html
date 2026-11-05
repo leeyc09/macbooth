@@ -1,0 +1,244 @@
+<!-- @dsCard group="Marketing Site" viewport="1440x900" name="Landing Page" subtitle="Hero · Session · Ticket · Location · Sponsor · QnA" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DroidKnights 2026</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--dk-text);font-family:var(--dk-font-body);overflow-x:hidden;background:#0B1230;background:linear-gradient(180deg,#0B1230 0%,#141A44 22%,#1E1A55 44%,#241866 60%,#1A1F5A 78%,#0B1230 100%);background-attachment:fixed;min-height:100vh}
+.bg{display:none}
+a{color:var(--dk-link);text-decoration:none}
+a:hover{color:var(--dk-lavender)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 40px}
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(1.5px 1.5px at 15% 20%,rgba(255,255,255,.8),transparent),radial-gradient(2px 2px at 70% 12%,rgba(177,140,255,.9),transparent),radial-gradient(1px 1px at 40% 60%,rgba(255,255,255,.6),transparent),radial-gradient(1.5px 1.5px at 88% 48%,rgba(45,123,255,.9),transparent),radial-gradient(1px 1px at 25% 82%,rgba(255,255,255,.5),transparent)}
+section{position:relative;z-index:1}
+.glow{position:absolute;border-radius:50%;filter:blur(140px);opacity:.5;pointer-events:none;z-index:0}
+.sec-head{text-align:center;margin-bottom:44px}
+.sec-head h2{font-weight:900;font-size:44px;letter-spacing:-.02em;margin:14px 0 0}
+.sec-head p{color:var(--dk-text-dim);font-size:18px;margin:12px 0 0}
+.eyebrow-c{display:flex;justify-content:center}
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head><body><div id="root"></div>
+<script type="text/babel">
+const { Button, Chip, Card, Badge, Eyebrow, Sparkle, Mascot, Icon } = window.DroidKnightsDesignSystem_0cd94e;
+const { useState } = React;
+const M = '../../assets/mascot';
+
+function Nav(){
+  return (
+    <header style={{position:'sticky',top:0,zIndex:20,backdropFilter:'blur(14px)',background:'rgba(11,18,48,.72)',borderBottom:'1px solid var(--dk-border)'}}>
+      <div className="wrap" style={{display:'flex',alignItems:'center',gap:20,height:74}}>
+        <a href="#top" style={{display:'flex',alignItems:'center',gap:12,fontFamily:'var(--dk-font-display)',fontWeight:700,fontSize:21,letterSpacing:'-.01em',color:'var(--dk-text)'}}>
+          <img src="../../assets/logo-favicon.png" alt="" style={{height:34}}/>DroidKnights
+        </a>
+        <nav style={{display:'flex',gap:26,marginLeft:30,fontSize:15,color:'var(--dk-text-dim)'}}>
+          <a href="#session">세션</a><a href="#ticket">티켓</a><a href="#location">장소</a><a href="#sponsor">후원</a><a href="#qna">QnA</a>
+        </nav>
+        <div style={{marginLeft:'auto'}}><Button size="md" arrow href="#ticket">티켓 구매</Button></div>
+      </div>
+    </header>
+  );
+}
+
+function Hero(){
+  return (
+    <section id="top" style={{position:'relative',overflow:'hidden'}}>
+      <div className="glow" style={{width:600,height:600,background:'var(--dk-purple)',right:-160,top:-240,opacity:.35}}/>
+      <div className="glow" style={{width:460,height:460,background:'var(--dk-blue)',left:-180,bottom:-160,opacity:.28}}/>
+      <div className="wrap" style={{textAlign:'center',padding:'80px 40px 88px'}}>
+        <img src="../../assets/logo-lockup.png" alt="DroidKnights 2026 · Unlock the next level of Android" style={{height:360,width:'auto',objectFit:'contain',filter:'drop-shadow(0 20px 60px rgba(123,92,255,.45))'}}/>
+        <h1 style={{fontWeight:700,fontSize:24,lineHeight:1.4,letterSpacing:'-.01em',color:'var(--dk-text)',margin:'8px 0 0'}}>
+          대한민국 최대 안드로이드 개발자들을 위한 <span style={{background:'var(--dk-grad)',WebkitBackgroundClip:'text',backgroundClip:'text',color:'transparent'}}>커뮤니티 컨퍼런스</span>
+        </h1>
+        <p style={{fontSize:19,lineHeight:1.6,color:'var(--dk-text-dim)',maxWidth:600,margin:'20px auto 0'}}>
+          주니어부터 시니어까지 모두가 공감하고 즐길 수 있는 지식의 장으로 만들고자 합니다.
+        </p>
+        <div style={{display:'flex',gap:14,marginTop:34,justifyContent:'center'}}>
+          <Button size="lg" arrow href="#ticket">티켓 사러 가기</Button>
+          <Button size="lg" variant="secondary" href="#session">세션 보기</Button>
+        </div>
+        <div style={{display:'flex',gap:26,marginTop:40,justifyContent:'center',fontFamily:'var(--dk-font-mono)',fontSize:15,color:'var(--dk-text-muted)'}}>
+          <span><Icon name="calendar" size={18} color="var(--dk-blue)" style={{verticalAlign:'-4px',marginRight:8}}/>2026.06.17</span>
+          <span><Icon name="location" size={18} color="var(--dk-blue)" style={{verticalAlign:'-4px',marginRight:8}}/>과학기술컨벤션센터</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const TRACKS={
+  'Track 1':[
+    ['09:30–10:40','행사 등록',null],
+    ['10:40–11:00','KEYNOTE',null],
+    ['11:00–11:30','카카오뱅크 Compose 적용기','이수호'],
+    ['11:50–12:35','KMP로 Figma 아이콘 동기화, 클릭 한 번이면 끝!','옥수환'],
+    ['12:35–13:55','점심 시간',null],
+    ['13:55–14:25','전방위 자동화 시대, CI/CD를 넘어 PM과 QA까지','김호중'],
+    ['14:45–15:15','Android에서 실현 가능한 모든 AI','강사룡'],
+    ['15:35–16:20','당신의 클린아키텍처는 틀렸다','박상권'],
+    ['16:40–17:10','다양한 스크롤 뷰에서의 영상 재생','이가은'],
+    ['17:30–18:00','레드팀 화이트해커의 안드로이드 앱 보안','김주원'],
+  ],
+  'Track 2':[
+    ['09:30–10:40','행사 등록',null],
+    ['10:40–11:00','KEYNOTE',null],
+    ['11:00–11:30','ReadMoreTextView: 텍스트 더보기 기능 구현하기','안성용'],
+    ['11:50–12:35','Benchmark와 BaselineProfile로 스크롤 성능 75% 개선','송상윤'],
+    ['12:35–13:55','점심 시간',null],
+    ['13:55–14:25','제미나이와 함께 안드로이드 공부하기','양찬석'],
+    ['14:45–15:15','Jetpack XR 살펴보기: XR 개발은 어떻게 이루어지는가?','윤희성'],
+    ['15:35–16:20','컴포즈 스냅샷 내부원리 찍어먹기','강다현'],
+    ['16:40–17:10','나도 edgeToEdge 적용하기 싫어. 근데 누군가는 해야 하잖아?','이지훈'],
+    ['17:30–18:00','Bytecode Manipulation 을 통해 생산성 높이기','강대규'],
+  ],
+};
+function Session(){
+  const [tab,setTab]=useState('Track 1');
+  const rows=TRACKS[tab];
+  return (
+    <section id="session" style={{padding:'90px 0'}}>
+      <div className="wrap">
+        <div className="sec-head"><div className="eyebrow-c"><Eyebrow>Session</Eyebrow></div><h2>원하는 세션을 만나보세요</h2><p>세션 일정 및 내용은 상황에 따라 조정될 수 있습니다.</p></div>
+        <div style={{display:'flex',gap:10,justifyContent:'center',marginBottom:28}}>
+          {Object.keys(TRACKS).map(t=><Chip key={t} as="button" active={tab===t} onClick={()=>setTab(t)}>{t}</Chip>)}
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:12}}>
+          {rows.map(([time,title,who],i)=>{
+            const plain=!who;
+            return (
+              <Card key={i} style={{display:'flex',alignItems:'center',gap:24,padding:'20px 26px',background:plain?'transparent':'var(--dk-surface)',border:plain?'1px dashed var(--dk-border)':'1px solid var(--dk-border)'}}>
+                <span style={{fontFamily:'var(--dk-font-mono)',fontSize:16,color:'var(--dk-blue)',flex:'0 0 120px'}}>{time}</span>
+                <span style={{fontSize:19,fontWeight:plain?400:700,color:plain?'var(--dk-text-muted)':'var(--dk-text)',flex:1}}>{title}</span>
+                {who&&<span style={{fontSize:15,color:'var(--dk-lavender)',fontFamily:'var(--dk-font-mono)'}}>{who}</span>}
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const TICKETS=[
+  ['일반','59,000원',['컨퍼런스 전 세션 입장','한정판 굿즈 · 명찰','점심 · 다과 제공'],false],
+  ['개인후원','150,000원',['일반 티켓 혜택 전체','개인후원 전용 굿즈','후원자 명단 등재'],true],
+];
+function Ticket(){
+  return (
+    <section id="ticket" style={{padding:'0 0 90px'}}>
+      <div className="wrap">
+        <div className="sec-head"><div className="eyebrow-c"><Eyebrow>Ticket</Eyebrow></div><h2>행사장 입장부터, 한정 굿즈까지</h2></div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,maxWidth:760,margin:'0 auto'}}>
+          {TICKETS.map(([name,price,perks,feat])=>(
+            <Card key={name} glow={feat} style={feat?{border:'1px solid rgba(177,140,255,.4)'}:{}}>
+              {feat&&<Badge style={{marginBottom:14}}>Best value</Badge>}
+              <h3 style={{fontSize:24,fontWeight:700,margin:'0 0 6px'}}>{name}</h3>
+              <div style={{fontWeight:900,fontSize:40,letterSpacing:'-.02em',background:'var(--dk-grad)',WebkitBackgroundClip:'text',backgroundClip:'text',color:'transparent'}}>{price}</div>
+              <ul style={{listStyle:'none',margin:'22px 0 26px',padding:0,display:'flex',flexDirection:'column',gap:12}}>
+                {perks.map(p=><li key={p} style={{display:'flex',gap:10,color:'var(--dk-text-dim)',fontSize:16}}><span style={{color:'#38E0B0'}}>✓</span>{p}</li>)}
+              </ul>
+              <Button size="md" arrow variant={feat?'primary':'secondary'} style={{width:'100%',justifyContent:'center'}}>구매하기</Button>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Location(){
+  return (
+    <section id="location" style={{padding:'90px 0'}}>
+      <div className="wrap">
+        <div className="sec-head"><div className="eyebrow-c"><Eyebrow>Location</Eyebrow></div><h2>6월 17일, 과학기술컨벤션센터에서 만나요</h2></div>
+        <div style={{display:'flex',gap:24,alignItems:'stretch'}}>
+          <Card style={{flex:'0 0 340px',display:'flex',flexDirection:'column',justifyContent:'center',gap:20}}>
+            <div style={{display:'flex',gap:14,alignItems:'center'}}><Icon name="calendar" size={26}/><div><div style={{fontSize:13,color:'var(--dk-text-muted)',fontFamily:'var(--dk-font-mono)'}}>DATE</div><div style={{fontSize:19,fontWeight:700}}>2026년 6월 17일</div></div></div>
+            <div style={{display:'flex',gap:14,alignItems:'center'}}><Icon name="location" size={26}/><div><div style={{fontSize:13,color:'var(--dk-text-muted)',fontFamily:'var(--dk-font-mono)'}}>VENUE</div><div style={{fontSize:19,fontWeight:700}}>과학기술컨벤션센터 (ST Center)</div></div></div>
+            <Button size="md" arrow variant="secondary">가는 길 찾아보기</Button>
+          </Card>
+          <div style={{flex:1,borderRadius:'var(--dk-radius-card)',border:'1px solid var(--dk-border)',background:'linear-gradient(135deg,#101a38,#0b1230)',minHeight:280,display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden'}}>
+            <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px)',backgroundSize:'40px 40px'}}/>
+            <div style={{position:'relative',textAlign:'center'}}><Icon name="location" size={40} color="var(--dk-blue)"/><div style={{marginTop:10,color:'var(--dk-text-muted)',fontFamily:'var(--dk-font-mono)',fontSize:14}}>지도 · Google Maps</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const SPONSORS=[['platinum','Platinum',1],['gold','Gold',1],['silver','Silver',1]];
+function Sponsor(){
+  return (
+    <section id="sponsor" style={{padding:'90px 0'}}>
+      <div className="wrap">
+        <div className="sec-head"><div className="eyebrow-c"><Eyebrow>Sponsor</Eyebrow></div><h2>함께하는 기업</h2></div>
+        <div style={{display:'flex',flexDirection:'column',gap:22,maxWidth:820,margin:'0 auto'}}>
+          {SPONSORS.map(([k,l,n])=>(
+            <div key={k} style={{display:'flex',alignItems:'center',gap:24}}>
+              <Badge tone={k} style={{minWidth:120,justifyContent:'center'}}>{l}</Badge>
+              <div style={{display:'flex',gap:16,flex:1}}>
+                {Array.from({length:k==='platinum'?2:k==='gold'?3:4}).map((_,j)=>(
+                  <div key={j} style={{flex:1,height:k==='platinum'?72:k==='gold'?60:50,borderRadius:12,background:'#fff',opacity:.92,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'var(--dk-font-mono)',color:'#8189a8',fontSize:13}}>LOGO</div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const QNA=[
+  ['행사 당일 현장에서 티켓 구매가 가능한가요?','아니요. 모든 티켓은 온라인으로만 판매되며, 행사 당일 현장에서는 구매하실 수 없습니다.'],
+  ['단체로 티켓을 구매할 수 있나요?','별도의 단체구매 기능은 제공하지 않지만, 한 번에 최대 10장까지 구매하실 수 있습니다. 여러 번 나누어 구매해 주세요.'],
+  ['참석확인증은 어떻게 발급받을 수 있나요?','예매하신 사이트의 나의 티켓 상세 화면에서, 티켓 오른쪽 [⋮] 버튼을 눌러 발급받을 수 있습니다.'],
+];
+function Qna(){
+  const [open,setOpen]=useState(0);
+  return (
+    <section id="qna" style={{padding:'0 0 90px'}}>
+      <div className="wrap" style={{maxWidth:820}}>
+        <div className="sec-head"><div className="eyebrow-c"><Eyebrow>QnA</Eyebrow></div><h2>자주 묻는 질문</h2></div>
+        <div style={{display:'flex',flexDirection:'column',gap:12}}>
+          {QNA.map(([q,a],i)=>(
+            <Card key={i} style={{padding:0,cursor:'pointer'}} onClick={()=>setOpen(open===i?-1:i)}>
+              <div style={{display:'flex',alignItems:'center',gap:16,padding:'22px 26px'}}>
+                <span style={{color:'var(--dk-lavender)',fontFamily:'var(--dk-font-mono)',fontWeight:700}}>Q.</span>
+                <span style={{fontSize:18,fontWeight:700,flex:1}}>{q}</span>
+                <span style={{color:'var(--dk-text-muted)',fontSize:24,transform:open===i?'rotate(45deg)':'none',transition:'transform .2s'}}>+</span>
+              </div>
+              {open===i&&<div style={{padding:'0 26px 24px 58px',color:'var(--dk-text-dim)',fontSize:16,lineHeight:1.6}}>{a}</div>}
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Footer(){
+  return (
+    <footer style={{position:'relative',zIndex:1,borderTop:'1px solid var(--dk-border)',padding:'40px 0'}}>
+      <div className="wrap" style={{display:'flex',alignItems:'center',gap:12,color:'var(--dk-text-muted)',fontFamily:'var(--dk-font-mono)',fontSize:14}}>
+        <Sparkle size={16}/> Copyright DroidKnights 2026 · All Rights Reserved
+        <span style={{marginLeft:'auto',display:'flex',gap:18}}><a href="#top">Instagram</a><a href="#top">Facebook</a><a href="#top">YouTube</a></span>
+      </div>
+    </footer>
+  );
+}
+
+function App(){
+  return (<>
+    <div className="stars"/>
+    <div className="bg"/>
+    <Nav/><Hero/><Session/><Ticket/><Location/><Sponsor/><Qna/><Footer/>
+  </>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script></body></html>

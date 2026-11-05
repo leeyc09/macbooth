@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MacBooth">
+<link rel="apple-touch-icon" href="assets/logo-lockup.png">
+<title>MacBooth Remote</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+  :root {
+    --space: #0B1230; --navy: #0E1A3A; --navy-2: #16234A;
+    --blue: #2D7BFF; --purple: #7B5CFF; --lavender: #B18CFF;
+    --text: #EAF0FF; --text-dim: #B9C6E8; --text-muted: #8B99C0;
+    --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.16);
+    --grad: linear-gradient(90deg, #2D7BFF, #B18CFF);
+    --grad-brand: linear-gradient(135deg, #2D7BFF, #7B5CFF);
+    --glow: 0 12px 30px rgba(45,123,255,.4), 0 24px 60px rgba(123,92,255,.5);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+  body { color: var(--text); font-family: 'Noto Sans KR', -apple-system, sans-serif; overflow: hidden;
+    -webkit-user-select: none; user-select: none; touch-action: manipulation;
+    background: radial-gradient(900px 600px at 10% 0%, rgba(45,123,255,.28), transparent 70%),
+                radial-gradient(900px 700px at 100% 100%, rgba(123,92,255,.3), transparent 70%), var(--space); }
+  .app { height: 100%; display: flex; flex-direction: column;
+    padding: max(20px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left)); }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .top img { height: 64px; }
+  .pill { font: 600 14px/1 'Space Grotesk', 'Noto Sans KR'; letter-spacing: .12em; padding: 10px 16px; border-radius: 999px;
+    border: 1px solid var(--line-strong); color: var(--lavender); background: rgba(255,255,255,.04); }
+  .pill.off { color: #FF8BA0; border-color: rgba(255,92,122,.4); }
+  .stage { flex: 1; overflow: auto; margin: 0 -24px; padding: 12px 24px 96px; display: flex; flex-direction: column; align-items: center; justify-content: center; justify-content: safe center; text-align: center; gap: 28px; min-height: 0; }
+  h1 { margin: 0; font: 900 clamp(32px, 6vw, 56px)/1.2 'Noto Sans KR'; letter-spacing: -.02em; }
+  h1 .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { margin: -12px 0 0; color: var(--text-dim); font-size: clamp(16px, 2.4vw, 20px); }
+  .buttons { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; width: 100%; }
+  .big { min-width: min(260px, 42vw); padding: 28px 36px; border-radius: 28px; border: 0; color: #fff; cursor: pointer;
+    font: 900 clamp(24px, 4vw, 36px)/1.2 'Noto Sans KR'; background: var(--grad-brand); box-shadow: var(--glow);
+    transition: transform .12s, opacity .2s; }
+  .big small { display: block; margin-top: 6px; font: 500 15px/1.3 'Noto Sans KR'; opacity: .85; }
+  .big:active { transform: scale(.96); }
+  /* Shoot buttons: twice the width and height of the other buttons */
+  .big.shoot { min-width: min(520px, 84vw); padding: 56px 72px; border-radius: 44px; font-size: clamp(40px, 7vw, 64px); }
+  .big.shoot small { margin-top: 10px; font-size: clamp(18px, 2.6vw, 26px); }
+  .buttons.many .big.shoot { min-width: min(520px, calc(50% - 10px)); }
+  .big.ghost { background: var(--navy-2); box-shadow: none; border: 1px solid var(--line-strong); }
+  .big:disabled { opacity: .45; }
+  .frames { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 210px)); gap: 18px; justify-content: center; width: 100%; max-height: 60vh; overflow: auto; padding: 6px; }
+  .frame { border: 3px solid transparent; border-radius: 18px; padding: 6px; background: var(--navy); cursor: pointer; }
+  .frame img { display: block; width: 100%; border-radius: 12px; }
+  .frame span { display: block; margin-top: 6px; font-size: 13px; color: var(--text-muted); }
+  .frame.on { border-color: var(--lavender); box-shadow: var(--glow); }
+  .frame.on span { color: var(--text); }
+  .qr { display: flex; align-items: center; gap: 24px; padding: 18px 22px; border-radius: 24px; background: var(--navy); border: 1px solid var(--line); text-align: left; }
+  .qr img { width: 160px; height: 160px; border-radius: 12px; background: #fff; }
+  .qr b { display: block; font-size: 22px; margin-bottom: 4px; }
+  .qr p { margin: 0; color: var(--text-muted); font-size: 15px; }
+  .orb { width: 120px; height: 120px; border-radius: 50%; background: var(--grad-brand); box-shadow: var(--glow); animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(.88); opacity: .7; } }
+  .toast { min-height: 24px; color: #FFB4C2; font-size: 16px; }
+  .foot { display: flex; align-items: center; gap: 16px; }
+  .reset { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line-strong); background: rgba(255,255,255,.04);
+    color: var(--text-muted); font: 500 13px/1 'Noto Sans KR'; cursor: pointer; }
+  .reset:disabled { opacity: .35; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <img src="assets/logo-lockup.png" alt="DroidKnights">
+    <span class="pill" id="pill">연결 중</span>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="foot">
+    <button class="reset" id="reset" title="지난 사진과 QR을 지우고 처음 화면으로">초기화</button>
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let state = null;
+let shown = '';
+let selected = null;        // Frame index tapped on the remote
+
+const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+async function act(action, value) {
+  try {
+    const res = await fetch('api/remote', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, value }) });
+    if (!res.ok) { $('toast').textContent = (await res.json()).error || '처리하지 못했어요'; return false; }
+    $('toast').textContent = '';
+    poll();
+    return true;
+  } catch (e) { $('toast').textContent = 'MacBooth에 연결할 수 없어요'; return false; }
+}
+
+function view(s) {
+  const many = s.captures && s.captures.length > 1;
+  switch (s.state) {
+    case 'wait': return `
+      <h1>사진 찍을 <span class="grad">준비 됐나요?</span></h1>
+      <p class="sub">${many ? '컷 수를 골라 바로 시작해요' : '버튼을 누르면 촬영을 시작해요'}</p>
+      <div class="buttons${many ? ' many' : ''}">${many
+        ? s.captures.map((n) => `<button class="big shoot" data-act="start" data-value="${n}">${n}컷 찍기<small>${n === 1 ? '한 장 크게' : `${n}장 연속 촬영`}</small></button>`).join('')
+        : `<button class="big shoot" data-act="start">사진 찍기<small>${s.captures[0]}컷</small></button>`}</div>
+      ${s.qr ? `<div class="qr"><img src="api/remote/qr.png?u=${encodeURIComponent(s.qr)}" alt="QR"><div><b>방금 찍은 사진 받기</b><p>휴대폰 카메라로 QR을 찍으세요</p></div></div>` : ''}`;
+    case 'choose': return `
+      <h1>몇 컷으로 <span class="grad">찍을까요?</span></h1>
+      <div class="buttons many">${s.captures.map((n) => `<button class="big shoot" data-act="choose" data-value="${n}">${n}컷</button>`).join('')}</div>`;
+    case 'chosen': case 'preview': case 'capture': return `
+      <div class="orb"></div><h1>촬영 중이에요</h1><p class="sub">큰 화면의 카메라를 봐주세요</p>`;
+    case 'layout':
+      if (!s.previews) return `<div class="orb"></div><h1>프레임을 준비하는 중</h1>`;
+      if (selected === null || selected >= s.previews) selected = s.layout_nbr;
+      return `
+        <h1>프레임을 <span class="grad">골라주세요</span></h1>
+        <div class="frames">${s.layouts.map((name, i) => `<div class="frame ${i === selected ? 'on' : ''}" data-frame="${i}">
+          <img src="api/remote/layout/${i}.jpg?v=${s.previews_id}" alt="${esc(name)}"><span>${esc(name)}</span></div>`).join('')}</div>
+        <div class="buttons"><button class="big" data-act="validate">이 프레임으로</button></div>`;
+    case 'processing': return `<div class="orb"></div><h1>사진을 만드는 중</h1><p class="sub">잠시만 기다려 주세요</p>`;
+    case 'print': case 'finish': return `<h1><span class="grad">완성!</span></h1><p class="sub">큰 화면에서 사진을 확인하세요</p>`;
+    case 'starting': return `<div class="orb"></div><h1>MacBooth 시작 중</h1>`;
+    default: return `<h1>잠시만요</h1><p class="sub">잠시 후 다시 시도해 주세요</p>`;
+  }
+}
+
+function render() {
+  const key = JSON.stringify([state.state, state.captures, state.qr, state.previews_id, state.layouts]);
+  if (key !== shown) {
+    if (state.state !== 'layout') selected = null;
+    $('stage').innerHTML = view(state);
+    shown = key;
+  } else if (state.state === 'layout') {
+    document.querySelectorAll('.frame').forEach((el) => el.classList.toggle('on', Number(el.dataset.frame) === selected));
+  }
+  document.querySelectorAll('.big').forEach((b) => { b.disabled = state.busy; });
+  $('reset').disabled = state.busy || state.state !== 'wait' || !state.picture;
+}
+
+$('stage').addEventListener('click', async (e) => {
+  const frame = e.target.closest('[data-frame]');
+  if (frame) {                                 // Select (also shown on the booth screen)
+    selected = Number(frame.dataset.frame);
+    render();
+    act('layout', selected);
+    return;
+  }
+  const btn = e.target.closest('[data-act]');
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  const a = btn.dataset.act;
+  if (a === 'validate') await act('layout', 'validate');
+  else await act(a, btn.dataset.value === undefined ? null : Number(btn.dataset.value));
+});
+
+// Press feedback of the shoot buttons: vibration when the device can,
+// otherwise a loud beep (iOS Safari has no vibration API).
+let audio = null;
+if (navigator.audioSession) navigator.audioSession.type = 'playback';  // Play even with the silent switch on
+function beep() {
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    if (audio.state === 'suspended') audio.resume();
+    const out = audio.createDynamicsCompressor();
+    out.connect(audio.destination);
+    const t = audio.currentTime;
+    [[1046, 0], [1568, 0.09]].forEach(([freq, at]) => {     // Two rising notes: "bip-bip"
+      const osc = audio.createOscillator(), gain = audio.createGain();
+      osc.type = 'square';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(1, t + at);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + at + 0.12);
+      osc.connect(gain).connect(out);
+      osc.start(t + at);
+      osc.stop(t + at + 0.13);
+    });
+  } catch (e) { /* No audio: nothing else to do */ }
+}
+function pressed() {
+  if (!(navigator.vibrate && navigator.vibrate(60))) beep();
+}
+$('stage').addEventListener('pointerdown', (e) => {
+  const btn = e.target.closest('.shoot');
+  if (btn && !btn.disabled) pressed();
+});
+
+// Reset: the wait screen without the last picture and its QR code
+$('reset').addEventListener('click', async () => {
+  if ($('reset').disabled || !confirm('지난 사진과 QR을 지우고 처음 화면으로 돌아갈까요?')) return;
+  $('reset').disabled = true;
+  await act('reset');
+});
+
+async function poll() {
+  try {
+    const res = await fetch('api/remote', { cache: 'no-store' });
+    state = await res.json();
+    $('pill').textContent = state.label || '연결됨';
+    $('pill').className = 'pill';
+    render();
+  } catch (e) {
+    $('pill').textContent = '연결 끊김';
+    $('pill').className = 'pill off';
+  }
+}
+poll();
+setInterval(poll, 500);
+</script>
+</body>
+</html>

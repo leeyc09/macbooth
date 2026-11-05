@@ -1,0 +1,12 @@
+<!-- @dsCard group="Effects" viewport="700x180" name="Cards & Glass" subtitle="Navy card elevation + glass chip" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<style>
+body{margin:0;background:var(--dk-space);font-family:var(--dk-font-body);padding:26px 22px;display:flex;gap:22px;align-items:center}
+.card{width:200px;height:104px;background:var(--dk-navy);border:1px solid var(--dk-border);border-radius:var(--dk-radius-card);box-shadow:var(--dk-shadow-card);display:flex;align-items:center;justify-content:center;color:var(--dk-text-dim);font-family:var(--dk-font-mono);font-size:12px}
+.chip{padding:14px 26px;border-radius:999px;background:var(--dk-glass-bg);border:var(--dk-glass-border);backdrop-filter:var(--dk-blur);color:var(--dk-text);font-weight:500;font-size:15px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.spec{color:var(--dk-text-muted);font-family:var(--dk-font-mono);font-size:12px}
+</style></head><body>
+<div class="card">--dk-shadow-card<br>radius 22px</div>
+<div class="stack"><div class="chip">Glass chip · 999px</div><div class="spec">--dk-glass-bg · blur(14px)</div></div>
+</body></html>

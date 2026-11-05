@@ -1,0 +1,34 @@
+<!-- @dsCard group="Slides" viewport="1920x1080" name="08 · Code" subtitle="코드 — mono window" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css"><link rel="stylesheet" href="./slide.css">
+<style>body{margin:0}
+.cd .dk-content{flex-direction:row;align-items:center;gap:80px}
+.cd .left{flex:0 0 640px}
+.cd .win{flex:1;background:var(--dk-navy);border:1px solid var(--dk-border);border-radius:var(--dk-radius-code);overflow:hidden;box-shadow:var(--dk-glow)}
+.cd .bar{display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid var(--dk-border)}
+.cd .bar i{width:16px;height:16px;border-radius:50%;display:block}
+.cd .fn{margin-left:12px;font-family:var(--dk-font-mono);font-size:22px;color:var(--dk-text-muted)}
+.cd pre{margin:0;padding:36px;font-family:var(--dk-font-mono);font-size:28px;line-height:1.7;color:var(--dk-text);overflow:auto}
+.cd .kw{color:var(--dk-purple)}.cd .fnn{color:var(--dk-blue)}.cd .str{color:#38E0B0}.cd .cm{color:var(--dk-text-muted)}</style></head>
+<body><div class="dk-stage cd">
+<div class="dk-stars"></div>
+<div class="dk-glow-bg" style="width:600px;height:600px;background:var(--dk-purple);left:-160px;bottom:-160px;opacity:.3"></div>
+<div class="dk-content">
+  <div class="left">
+    <div class="dk-eyebrow"><svg class="dk-spark" width="26" height="26" viewBox="0 0 100 100"><path d="M50 3C53 33 67 47 97 50C67 53 53 67 50 97C47 67 33 53 3 50C33 47 47 33 50 3Z" fill="#B18CFF"/></svg>LIVE CODE</div>
+    <h2 class="dk-title" style="margin-top:22px">상태를 <span class="dk-grad-text">선언</span>하세요</h2>
+    <p class="dk-body" style="margin-top:24px">한 개의 <code style="font-family:var(--dk-font-mono);color:var(--dk-lavender)">@Composable</code> 함수가 UI와 상태를 함께 담습니다.</p>
+  </div>
+  <div class="win">
+    <div class="bar"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i><span class="fn">Greeting.kt</span></div>
+    <pre><span class="cm">// DroidKnights 2026</span>
+<span class="kw">@Composable</span>
+<span class="kw">fun</span> <span class="fnn">Greeting</span>(name: String) {
+  <span class="kw">var</span> count <span class="kw">by</span> remember { mutableStateOf(<span class="str">0</span>) }
+  Button(onClick = { count++ }) {
+    Text(<span class="str">"$name · $count"</span>)
+  }
+}</pre>
+  </div>
+</div>
+<div class="dk-pageno">08</div>
+</div></body></html>

@@ -1,0 +1,16 @@
+{
+  "format": "pibooth-template",
+  "version": 1,
+  "name": "Classic strip",
+  "captures": 4,
+  "orientation": "portrait",
+  "background": {"color": [244, 241, 234]},
+  "slots": [
+    {"type": "capture", "rect": [0.05, 0.05, 0.43, 0.31], "index": 1, "mask": "rounded", "radius": 0.05, "crop": true},
+    {"type": "capture", "rect": [0.52, 0.05, 0.43, 0.31], "index": 2, "mask": "rounded", "radius": 0.05, "crop": true},
+    {"type": "capture", "rect": [0.05, 0.38, 0.43, 0.31], "index": 3, "mask": "rounded", "radius": 0.05, "crop": true},
+    {"type": "capture", "rect": [0.52, 0.38, 0.43, 0.31], "index": 4, "mask": "rounded", "radius": 0.05, "crop": true},
+    {"type": "text", "rect": [0.06, 0.76, 0.88, 0.10], "index": 1, "align": "center", "font": "Amatic-Bold", "color": [38, 34, 28]},
+    {"type": "text", "rect": [0.06, 0.87, 0.88, 0.06], "index": 2, "align": "center", "font": "Amatic-Bold", "color": [140, 133, 120]}
+  ]
+}

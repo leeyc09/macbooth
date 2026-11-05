@@ -1,0 +1,81 @@
+# DroidKnights Design System
+
+Brand + product design system for **DroidKnights** — Korea's largest community-led Android developer conference (running annually since 2017; "국내 최대 규모 안드로이드 컨퍼런스"). This system packages the **Android Conference 2026** identity: a deep-space navy base, a blue→purple "galaxy" gradient, a galaxy-droid mascot, and a Korean-first voice.
+
+The concept: **"Unlock the next level of Android / 성장을 초월한 속도, 새로운 차원으로"** — a cosmic, developer-native aesthetic where an Android droid explores space.
+
+## Sources
+This system was reconstructed from the user's existing design-system document (attached as a bundled HTML file, `Android Conference 2026 디자인 시스템.html`) plus supplied brand renders:
+- **Logo / mascot renders** — `assets/logo-mark.png` (gradient droid head), `assets/logo-full.png` (DROID KNIGHTS 2026 poster lockup), `assets/logo-heads.png` (head-size study), and the 10 mascot poses embedded in the source doc (extracted to `assets/mascot/`).
+- Public context: the DroidKnights community and its open-source app (GitHub org `droidknights`, Kotlin/Compose Multiplatform). No production codebase or Figma was attached — the token values, type scale, spacing, and mascot set were lifted directly from the attached design-system document.
+
+> **Note on the logo:** the renders provided are AI-style brand renders supplied by the user, treated here as the official mark. They are used as-is; no logo was drawn or reconstructed from memory.
+
+---
+
+## CONTENT FUNDAMENTALS
+How DroidKnights writes.
+
+- **Language:** Korean-primary, English-secondary. Body and headings are Korean; eyebrows, section labels, and the wordmark are English (often all-caps): `SPONSOR TIERS`, `SESSION TRACKS`, `BECOME A SPONSOR · 2026`.
+- **Voice:** confident, community-warm, developer-native. Speaks *to* the developer ("여러분의 참여로 더 나은 앱을"), invites participation, celebrates the craft. Never corporate or salesy.
+- **Signature lines:** aspirational + cosmic. e.g. *"성장을 초월한 속도, 새로운 차원으로"*, *"함께 다음 차원으로"*, *"Unlock the next level of Android"*. The word **차원 (dimension/level)** recurs as the core metaphor.
+- **Casing:** English display copy is UPPERCASE with wide tracking (0.22em on eyebrows). Korean runs sentence-case, weight-900 for headings.
+- **Numbers & code:** shown in Roboto Mono — years (`2026`), token names (`--dk-blue`), Kotlin snippets (`val theme = DroidKnights2026`), timestamps. Mono = "this is technical / real".
+- **Emoji:** not used in the brand voice. The **sparkle (✦)** glyph and the mascot carry the personality instead.
+- **Tone examples:** eyebrow `✦ DESIGN SYSTEM · V1.0`; CTA `제안서 요청하기 →`; footnote `✓ 포함 · — 미포함 · 금액·수량은 예시이며 제안서에서 수정하세요.`
+
+## VISUAL FOUNDATIONS
+
+- **Color:** deep space-navy base (`--dk-space #0B1230`) with cards one step up (`--dk-navy #0E1A3A`). Accent ramp is **blue `#2D7BFF` → purple `#7B5CFF` → lavender `#B18CFF`**. Blue is the primary/link, purple the gradient endpoint & secondary, lavender the label/sparkle/tertiary. A light theme exists (`--dk-light-bg #F4F5FB`, ink `#3C4670`) but dark is the default. Sponsor tiers use deliberately **off-brand metallic** tones (platinum/gold/silver/bronze) so they never compete with the accent ramp.
+- **Gradients:** two workhorses — `--dk-grad` (90° blue→lavender, for headline text clips) and `--dk-grad-brand` (135° blue→purple, for button/chip fills). A `--dk-grad-galaxy` radial is used for atmospheric fills. Gradients are used generously but always within the blue-purple family — never rainbow, never warm.
+- **Type:** **Space Grotesk** (display / eyebrows / latin), **Noto Sans KR** (headings + body, KO-first, weights to 900), **Roboto Mono** (code / tokens / captions). Headlines are heavy (900) and tight (-0.02em). Eyebrows are 600, uppercase, 0.22em tracked. Hero 92–118px, slide title 60px, body 34px on slides.
+- **Backgrounds:** near-black space navy, layered as **base → starfield → content**. Starfields are tiny multi-color radial-gradient dots; large blurred color "glow" orbs (blur ~120px) sit behind content for depth. No photography, no flat color blocks — always atmospheric.
+- **Mascot imagery:** cool-toned (blues/purples), galaxy-textured 3D droid on transparent PNG, always over a dark cell with a soft glow. Never recolored, never on a busy background, one per view.
+- **Animation:** implied gentle easing (`cubic-bezier(.22,.61,.36,1)`), fades and soft rises; glows pulse subtly. No bounces, no aggressive motion. Durations ~140–420ms.
+- **Hover:** lighten / raise + intensify glow (chips fill with gradient when active). **Press:** subtle shrink. Links shift blue→lavender.
+- **Borders & hairlines:** 1px translucent white (`rgba(255,255,255,.08)`) on dark; translucent navy on light. Strong variant at .16.
+- **Shadows / glow:** the signature is the **brand glow** — `0 12px 30px rgba(45,123,255,.4), 0 24px 60px rgba(123,92,255,.5)` — used under CTAs, the hero mascot, and sparkles. Flat cards use a plain dark shadow. Mascots get a `drop-shadow` glow.
+- **Transparency & blur:** glass chips/bars use `rgba(255,255,255,.06)` + `blur(14px)`. Used for floating nav and pills, not for content cards.
+- **Corner radii:** cards **22px**, code windows **20px**, chips/pills **999px**, small elements 12px.
+- **Cards:** navy surface, 1px translucent border, 22px radius, dark shadow (or brand glow for hero/feature cards). 32px internal padding.
+- **Layout:** slides are 1920×1080 with **110px side / 90px top** padding; 48px title→body; 26px list-item gaps.
+
+## ICONOGRAPHY
+- **Style:** line icons on a **24px grid**, `stroke: currentColor`, round caps/joins, default color `--dk-lavender`. Used for benefits and event info (booth, session, badge, goods, ticket, mic, calendar, location, clock, code). Implemented in `components/brand/Icon.jsx`.
+- **Sparkle:** the 4-point star (`fill #B18CFF`, path in `Sparkle.jsx`) is the brand's anchor glyph — it prefixes every eyebrow and seeds hero accents. Rendered as inline SVG.
+- **Mascot:** the galaxy droid is the primary iconographic asset — 1 hero + 9 poses (wave, point, cheer, laptop, flag, welcome, fly, portal, back) as transparent PNGs in `assets/mascot/`.
+- **Emoji:** not used. **Unicode:** the `✦` sparkle and `→` arrow appear in copy; checkmarks `✓` / em-dash `—` mark inclusion in comparison tables.
+- No external icon font. The line set is a small custom SVG set matching the source's spec; extend `Icon.jsx` rather than pulling in a CDN library (note if you substitute one).
+
+---
+
+## Index / Manifest
+Root:
+- `styles.css` — global entry (import list only). Consumers link this one file.
+- `tokens/` — `colors.css`, `typography.css`, `spacing.css`, `effects.css`, `fonts.css`.
+- `assets/` — `logo-lockup-dark.png` (starfield lockup, main), `logo-lockup.png` (transparent lockup for dark backgrounds), `logo-favicon.png` (droid-head mark — favicon + SNS profile), `logo-circle.png` (circular badge), `logo-mark.png` (legacy gradient head), `logo-wordmark.png` (outline wordmark), `logo-full.png` (lockup on solid black), `mascot/*.png` (hero + 9 poses).
+- `guidelines/cards/` — foundation specimen cards (Design System tab).
+- `components/` — reusable React primitives (below).
+- `ui_kits/` — full-surface recreations (below).
+- `thumbnail.html` — homepage tile. `SKILL.md` — Agent Skills entry.
+
+### Components
+Load: `const { Button, … } = window.DroidKnightsDesignSystem_0cd94e` after `_ds_bundle.js`.
+
+**core/** — `Button`, `Chip`, `Badge`, `Card`, `Stat`, `CodeBlock`
+**brand/** — `Eyebrow`, `Sparkle`, `Mascot`, `Icon`
+
+These are the primitives the source design system implies; a standard broad UI-kit set was intentionally *not* invented. **Intentional additions:** `Icon` (line-glyph wrapper) and `Sparkle` (brand glyph) — added because the source specifies an icon system and a sparkle motif but ships no component for either.
+
+### UI Kits
+- `ui_kits/slides/` — **Slide deck template.** 10 slide types at 1920×1080 (cover, agenda, section, speaker, body, stat, comparison, code, image[light], closing), 3-layer base→starfield→content, dark + one light variant. Shared `slide.css`.
+- `ui_kits/site/` — **Marketing landing page.** Interactive React recreation mirroring the real droidknights.dev IA: hero (headline + subtitle) → **Session** (2-track timetable, time-slot rows) → **Ticket** (일반 / 개인후원 pricing) → **Location** (date · venue · map) → **Sponsor** (Platinum/Gold/Silver) → **QnA** (FAQ accordion) → footer (copyright · social). Sample content is drawn from DroidKnights 2025.
+- `ui_kits/collateral/` — **Event collateral.** Admission ticket, attendee lanyard badge, and square social/poster card.
+
+---
+
+## Real site reference
+The marketing kit follows the live event site (`https://droidknights.dev/2025`, structure expected to carry into 2026). Section order: **Hero → Session → Ticket → Location → Sponsor → QnA → Footer**. Tone/voice examples pulled from it: *"대한민국 최대 안드로이드 개발자들만을 위한 드로이드나이츠"*, *"주니어부터 시니어까지 모두가 공감하고 즐길 수 있는 지식의 장"*. Sponsors use star-tier marks (Platinum/Gold/Silver); tickets are 일반 / 개인후원. Venue: 과학기술컨벤션센터(ST Center), 2026년 11월 2일(월).
+
+## Font substitution
+All three families (Space Grotesk, Noto Sans KR, Roboto Mono) are the **real** brand fonts and load from **Google Fonts** (`tokens/fonts.css`). No substitutions were made. If you need self-hosted `.woff2` for offline/production use, drop them in and swap the `@import` for `@font-face` rules.

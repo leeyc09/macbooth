@@ -1,0 +1,72 @@
+<!-- @dsCard group="Collateral" viewport="1200x820" name="Ticket · Badge · Poster" subtitle="Event ticket, attendee badge, social card" -->
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#070B1C;color:var(--dk-text);font-family:var(--dk-font-body);padding:48px;display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}
+.stars{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(2px 2px at 30% 30%,#fff,transparent),radial-gradient(1.5px 1.5px at 70% 55%,#B18CFF,transparent),radial-gradient(1px 1px at 50% 80%,#2D7BFF,transparent);opacity:.6}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--dk-font-display);font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--dk-lavender);font-size:12px}
+.mono{font-family:var(--dk-font-mono)}
+
+/* Ticket */
+.ticket{width:520px;height:230px;display:flex;border-radius:22px;overflow:hidden;box-shadow:var(--dk-glow);position:relative}
+.ticket .main{flex:1;background:linear-gradient(135deg,#16234A,#0E1A3A);padding:26px 28px;position:relative;overflow:hidden}
+.ticket .glow{position:absolute;width:280px;height:280px;border-radius:50%;filter:blur(90px);background:var(--dk-purple);right:-90px;top:-120px;opacity:.6}
+.ticket h3{font-family:var(--dk-font-display);font-weight:700;font-size:34px;margin:12px 0 4px;letter-spacing:-.01em;position:relative}
+.ticket .grad{background:var(--dk-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ticket .row{display:flex;gap:30px;margin-top:20px;position:relative}
+.ticket .k{color:var(--dk-text-muted);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.ticket .v{font-size:18px;font-weight:700;margin-top:2px}
+.ticket .stub{width:120px;background:var(--dk-grad-brand);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;border-left:2px dashed rgba(255,255,255,.5)}
+.ticket .stub .no{writing-mode:vertical-rl;font-family:var(--dk-font-mono);letter-spacing:.3em;font-size:14px}
+
+/* Badge */
+.badge{width:300px;height:440px;border-radius:24px;background:var(--dk-navy);border:1px solid var(--dk-border-strong);box-shadow:var(--dk-shadow-raised);overflow:hidden;position:relative}
+.badge .top{height:26px;background:#070B1C}
+.badge .lanyard{height:52px;background:var(--dk-grad-brand);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--dk-font-display);letter-spacing:.28em;font-weight:600;font-size:13px}
+.badge .hole{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:56px;height:10px;border-radius:999px;background:#000;border:1px solid var(--dk-border-strong);z-index:3}
+.badge .body{padding:30px 24px;text-align:center;position:relative}
+.badge img{height:120px;filter:var(--dk-glow-mascot)}
+.badge .name{font-size:28px;font-weight:900;margin-top:12px}
+.badge .role{color:var(--dk-lavender);font-family:var(--dk-font-mono);font-size:13px;margin-top:4px}
+.badge .tag{display:inline-block;margin-top:16px;padding:6px 16px;border-radius:999px;background:rgba(177,140,255,.14);border:1px solid rgba(177,140,255,.35);color:var(--dk-lavender);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.badge .foot{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:var(--dk-text-muted);font-family:var(--dk-font-mono);font-size:11px}
+
+/* Poster / social */
+.poster{width:300px;height:300px;border-radius:24px;box-shadow:var(--dk-glow);overflow:hidden;position:relative}
+.poster img{width:100%;height:100%;object-fit:cover;display:block}
+</style></head>
+<body>
+<!-- Ticket -->
+<div class="ticket">
+  <div class="main"><div class="glow"></div>
+    <div class="eyebrow">◇ Admit One · 2026</div>
+    <h3>DROID <span class="grad">KNIGHTS</span></h3>
+    <div class="row">
+      <div><div class="k">Date</div><div class="v">11.02 MON</div></div>
+      <div><div class="k">Venue</div><div class="v">ST Center</div></div>
+      <div><div class="k">Seat</div><div class="v">Free</div></div>
+    </div>
+    <div class="row"><div><div class="k">Attendee</div><div class="v">김안드로 · Conference Pass</div></div></div>
+  </div>
+  <div class="stub"><div class="no">DK-2026-0413</div></div>
+</div>
+
+<!-- Badge -->
+<div class="badge">
+  <div class="hole"></div>
+  <div class="top"></div>
+  <div class="lanyard">DROIDKNIGHTS 2026</div>
+  <div class="body">
+    <img src="../../assets/mascot/welcome.png" alt="">
+    <div class="name">김안드로</div>
+    <div class="role">Android Engineer @ Studio</div>
+    <span class="tag">Attendee</span>
+  </div>
+  <div class="foot">2026.11.02 · 과학기술컨벤션센터, Seoul</div>
+</div>
+
+<!-- Poster -->
+<div class="poster">
+  <img src="../../assets/logo-full.png" alt="DroidKnights 2026 poster">
+</div>
+</body></html>

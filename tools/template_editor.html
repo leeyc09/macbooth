@@ -1,0 +1,812 @@
+<title>Macbooth Template Studio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper: #f4f1ea;
+    --panel: #fbfaf7;
+    --panel-2: #efeae0;
+    --ink: #26221c;
+    --muted: #8c8578;
+    --line: #ddd6c8;
+    --shutter: #d1483f;
+    --shutter-ink: #ffffff;
+    --teal: #2f6f6a;
+    --focus: #2f6f6a;
+    --shadow: 0 1px 2px rgba(38,34,28,.06), 0 6px 20px rgba(38,34,28,.08);
+    --radius: 10px;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --paper: #171613;
+      --panel: #201e1a;
+      --panel-2: #2a2823;
+      --ink: #ece7dd;
+      --muted: #9a9284;
+      --line: #35322c;
+      --shutter: #e0655c;
+      --shutter-ink: #1a1512;
+      --teal: #57a79f;
+      --focus: #57a79f;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #171613;
+    --panel: #201e1a;
+    --panel-2: #2a2823;
+    --ink: #ece7dd;
+    --muted: #9a9284;
+    --line: #35322c;
+    --shutter: #e0655c;
+    --shutter-ink: #1a1512;
+    --teal: #57a79f;
+    --focus: #57a79f;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Archivo", system-ui, sans-serif; line-height: 1.45;
+  }
+  h1, h2, h3 { margin: 0; }
+  button { font-family: inherit; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+
+  header.bar {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 14px clamp(16px, 3vw, 28px);
+    border-bottom: 1px solid var(--line); background: var(--panel);
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
+  .brand .mark {
+    font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 22px;
+    letter-spacing: -.01em;
+  }
+  .brand .mark b { color: var(--shutter); font-weight: 600; }
+  .brand .sub { font-size: 12px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+
+  .seg { display: inline-flex; background: var(--panel-2); border-radius: 8px; padding: 3px; gap: 2px; }
+  .seg button {
+    border: 0; background: transparent; color: var(--muted); font-weight: 600; font-size: 13px;
+    padding: 6px 11px; border-radius: 6px;
+  }
+  .seg button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: var(--shadow); }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field > label { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  input[type="text"], input[type="number"], select, textarea {
+    font-family: inherit; font-size: 14px; color: var(--ink);
+    background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+  }
+  input[type="color"] { border: 1px solid var(--line); border-radius: 8px; height: 36px; width: 100%; background: var(--paper); padding: 3px; }
+
+  .layout {
+    display: grid; grid-template-columns: 224px minmax(0,1fr) 300px; gap: 0;
+    min-height: calc(100vh - 62px);
+  }
+  aside { padding: 18px; display: flex; flex-direction: column; gap: 18px; }
+  aside.tools { border-right: 1px solid var(--line); background: var(--panel); }
+  aside.inspector { border-left: 1px solid var(--line); background: var(--panel); }
+  .group { display: flex; flex-direction: column; gap: 10px; }
+  .group > h3 {
+    font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+    font-weight: 700; padding-bottom: 4px; border-bottom: 1px solid var(--line);
+  }
+
+  .tool-btn {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+    padding: 10px 12px; border-radius: 9px; font-weight: 600; font-size: 14px;
+  }
+  .tool-btn:hover { border-color: var(--shutter); }
+  .tool-btn .ico { width: 22px; height: 22px; flex: none; color: var(--shutter); }
+  .tool-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .tool-btn:disabled:hover { border-color: var(--line); }
+
+  /* Canvas stage */
+  .stage {
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    gap: 14px; padding: clamp(18px, 4vw, 40px); overflow: auto;
+  }
+  .stage .ruler { font-size: 12px; color: var(--muted); font-family: "JetBrains Mono", monospace; }
+  .canvas-wrap {
+    position: relative; background:
+      linear-gradient(45deg, var(--panel-2) 25%, transparent 25%, transparent 75%, var(--panel-2) 75%) 0 0/22px 22px,
+      linear-gradient(45deg, var(--panel-2) 25%, transparent 25%, transparent 75%, var(--panel-2) 75%) 11px 11px/22px 22px,
+      var(--panel);
+    box-shadow: var(--shadow); border: 1px solid var(--line);
+  }
+  #canvas { position: absolute; inset: 0; overflow: hidden; }
+
+  .slot {
+    position: absolute; overflow: visible; cursor: grab;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-user-select: none; user-select: none;
+  }
+  .slot.dragging { cursor: grabbing; }
+  .slot .body {
+    position: absolute; inset: 0; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  }
+  .slot.capture .body { color: #fff; font-family: "Fraunces", serif; font-weight: 600; font-size: 30px; }
+  .slot.text .body { background: transparent; box-shadow: none; color: var(--ink); font-family: "Fraunces", serif; padding: 0 6px; }
+  .slot.image .body { background: transparent; box-shadow: none; }
+  .slot.image .body img { width: 100%; height: 100%; object-fit: contain; }
+  .slot .outline {
+    position: absolute; inset: -1px; border: 1.5px dashed transparent; pointer-events: none;
+  }
+  .slot.selected { z-index: 5; }
+  .slot.selected .outline { border-color: var(--focus); }
+  .handle {
+    position: absolute; width: 14px; height: 14px; right: -8px; bottom: -8px;
+    background: var(--focus); border: 2px solid #fff; border-radius: 50%; cursor: nwse-resize;
+    display: none;
+  }
+  .slot.selected .handle { display: block; }
+  .badge {
+    position: absolute; top: -9px; left: -1px; font-size: 10px; font-weight: 700;
+    background: var(--focus); color: #fff; padding: 1px 6px; border-radius: 6px;
+    letter-spacing: .04em; text-transform: uppercase; pointer-events: none;
+  }
+
+  /* Inspector */
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .empty-note { color: var(--muted); font-size: 13px; padding: 8px 0; }
+  .danger { color: var(--shutter); border-color: color-mix(in srgb, var(--shutter) 40%, var(--line)); background: transparent; }
+  .danger:hover { background: color-mix(in srgb, var(--shutter) 12%, transparent); }
+  .btn {
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+    padding: 9px 12px; border-radius: 8px; font-weight: 600; font-size: 13px;
+  }
+  .btn.primary { background: var(--shutter); color: var(--shutter-ink); border-color: var(--shutter); }
+  .btn.full { width: 100%; }
+  .swatches { display: flex; gap: 6px; flex-wrap: wrap; }
+  .swatches button { width: 26px; height: 26px; border-radius: 6px; border: 1px solid rgba(0,0,0,.15); padding: 0; }
+
+  /* Export drawer */
+  .export {
+    grid-column: 1 / -1; border-top: 1px solid var(--line); background: var(--panel);
+    padding: 16px clamp(16px,3vw,28px); display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start;
+  }
+  .export h3 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  textarea#json { width: 100%; min-height: 150px; resize: vertical; font-family: "JetBrains Mono", monospace; font-size: 12px; line-height: 1.5; white-space: pre; }
+  .steps { font-size: 13px; color: var(--ink); }
+  .steps ol { margin: 8px 0 0; padding-left: 18px; }
+  .steps li { margin-bottom: 8px; }
+  .steps code, code.inline {
+    font-family: "JetBrains Mono", monospace; font-size: 12px;
+    background: var(--panel-2); padding: 1px 5px; border-radius: 4px;
+  }
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: var(--paper); padding: 10px 18px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; opacity: 0; transition: all .25s ease; pointer-events: none; z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .hint { font-size: 12px; color: var(--muted); }
+
+  .local-only { display: none; }
+  body.local .local-only { display: block; }
+  body.local .cloud-only { display: none; }
+  .local-panel { border: 1px solid var(--teal); border-radius: var(--radius); padding: 12px; margin-bottom: 12px; background: color-mix(in srgb, var(--teal) 7%, transparent); }
+  .local-panel h3 { color: var(--teal); border: 0; margin-bottom: 8px; }
+  .local-panel .rowg { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .local-panel select { flex: 1; min-width: 120px; }
+  .btn.teal { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .preview-img { margin-top: 10px; max-width: 220px; width: 100%; border: 1px solid var(--line); border-radius: 6px; box-shadow: var(--shadow); }
+  label.check { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink); cursor: pointer; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    aside.tools, aside.inspector { border: 0; border-bottom: 1px solid var(--line); }
+    .export { grid-template-columns: 1fr; }
+  }
+</style>
+
+<header class="bar">
+  <div class="brand">
+    <span class="mark">Macbooth <b>Template</b> Studio</span>
+    <span class="sub">layout designer</span>
+  </div>
+  <div class="field" style="gap:3px">
+    <label for="tname">Template name</label>
+    <input type="text" id="tname" value="Classic strip" style="width:170px">
+  </div>
+  <div class="field" style="gap:3px">
+    <label>Photos</label>
+    <div class="seg" id="captures" role="group" aria-label="Number of photos">
+      <button data-n="1" type="button">1</button>
+      <button data-n="2" type="button">2</button>
+      <button data-n="3" type="button">3</button>
+      <button data-n="4" type="button" aria-pressed="true">4</button>
+    </div>
+  </div>
+  <div class="field" style="gap:3px">
+    <label>Orientation</label>
+    <div class="seg" id="orient" role="group" aria-label="Orientation">
+      <button data-o="portrait" type="button" aria-pressed="true">Portrait</button>
+      <button data-o="landscape" type="button">Landscape</button>
+    </div>
+  </div>
+  <div class="seg" id="theme" role="group" aria-label="Theme" style="align-self:flex-end">
+    <button data-t="light" type="button">Light</button>
+    <button data-t="dark" type="button">Dark</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="tools">
+    <div class="group">
+      <h3>Add</h3>
+      <button class="tool-btn" id="add-capture" type="button">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg>
+        Photo slot
+      </button>
+      <button class="tool-btn" id="add-text" type="button">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V5h16v2M12 5v14M9 19h6"/></svg>
+        Footer text
+      </button>
+      <label class="tool-btn" for="add-image-file">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>
+        Sticker / logo
+      </label>
+      <input type="file" id="add-image-file" accept="image/png,image/jpeg,image/webp" hidden>
+      <p class="hint">Transparent PNG works best for stickers and frames.</p>
+    </div>
+
+    <div class="group">
+      <h3>Background</h3>
+      <div class="seg" id="bgmode" role="group" aria-label="Background mode" style="width:100%">
+        <button data-b="color" type="button" aria-pressed="true" style="flex:1">Color</button>
+        <button data-b="image" type="button" style="flex:1">Image</button>
+      </div>
+      <div id="bg-color-field" class="field">
+        <input type="color" id="bgcolor" value="#f4f1ea">
+        <div class="swatches" id="bgswatches"></div>
+      </div>
+      <label class="btn full" for="bgfile" id="bg-image-field" hidden style="text-align:center">Upload background…</label>
+      <input type="file" id="bgfile" accept="image/*" hidden>
+    </div>
+
+    <div class="group">
+      <h3>Start from</h3>
+      <button class="btn full" data-preset="grid" type="button">Even grid</button>
+      <button class="btn full" data-preset="polaroid" type="button">Tilted polaroids</button>
+      <button class="btn full" data-preset="filmstrip" type="button">Film strip</button>
+    </div>
+  </aside>
+
+  <main class="stage">
+    <div class="ruler" id="ruler">4 × 6 in · portrait · 2400 × 3600 px</div>
+    <div class="canvas-wrap" id="wrap">
+      <div id="canvas"></div>
+    </div>
+    <p class="hint">Drag to move · drag the corner dot to resize · click empty space to deselect</p>
+  </main>
+
+  <aside class="inspector">
+    <div class="group">
+      <h3>Selection</h3>
+      <div id="inspector"><p class="empty-note">Nothing selected. Add a photo slot or pick one on the canvas.</p></div>
+    </div>
+  </aside>
+
+  <section class="export">
+    <div>
+      <div class="local-panel local-only">
+        <h3>Connected to pibooth</h3>
+        <div class="rowg">
+          <select id="tpl-list" aria-label="Existing templates"><option value="">Existing templates…</option></select>
+          <button class="btn" id="tpl-open" type="button">Open</button>
+        </div>
+        <div class="rowg" style="margin-top:10px">
+          <button class="btn teal" id="save-local" type="button">Save to pibooth</button>
+          <button class="btn" id="real-preview" type="button">Real preview</button>
+          <label class="check"><input type="checkbox" id="register" checked> Register in pibooth.cfg</label>
+        </div>
+        <div id="local-status" class="hint" style="margin-top:8px"></div>
+        <img id="preview-img" class="preview-img" alt="Rendered preview" hidden>
+      </div>
+      <h3>Template file</h3>
+      <textarea id="json" spellcheck="false" aria-label="Template JSON"></textarea>
+      <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap">
+        <button class="btn primary cloud-only" id="copy" type="button">Copy JSON</button>
+        <button class="btn" id="load" type="button">Load pasted JSON</button>
+        <span class="hint" id="savename" style="align-self:center"></span>
+      </div>
+    </div>
+    <div class="steps">
+      <h3>Use it in pibooth</h3>
+      <ol>
+        <li>Save the JSON as <code id="fname">classic-strip.json</code> next to your config, e.g. <code>~/.config/pibooth/</code>.</li>
+        <li>Point the template option at it (add more paths to offer a choice after each shoot):
+          <br><code class="inline">[PICTURE]</code><br><code class="inline">template = ("classic-strip.json", "fancy.xml")</code></li>
+        <li>Enable the plugin under <code class="inline">[GENERAL] plugins</code> and restart pibooth.</li>
+      </ol>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast">Copied</div>
+
+<script>
+(function () {
+  "use strict";
+  var PRINT = { portrait: [2400, 3600], landscape: [3600, 2400] };
+  var CAP_COLORS = ["#d1483f", "#2f6f6a", "#c98a2b", "#5a5aa8"];
+  var uid = 0;
+
+  var state = {
+    name: "Classic strip", captures: 4, orientation: "portrait",
+    background: { mode: "color", color: "#f4f1ea", image: null },
+    slots: [], selected: null
+  };
+
+  var el = function (id) { return document.getElementById(id); };
+  var canvas = el("canvas"), wrap = el("wrap");
+
+  // ---- presets ---------------------------------------------------------
+  function preset(kind) {
+    var n = state.captures, slots = [], i;
+    if (kind === "grid") {
+      var cols = n >= 3 ? 2 : 1, rows = Math.ceil(n / cols);
+      var gw = 0.9 / cols, gh = 0.66 / rows, gx = 0.05, gy = 0.05, gap = 0.02;
+      for (i = 0; i < n; i++) {
+        var c = i % cols, r = Math.floor(i / cols);
+        slots.push(mk("capture", i + 1, gx + c * gw, gy + r * gh, gw - gap, gh - gap, { mask: "rounded", radius: 0.05 }));
+      }
+    } else if (kind === "polaroid") {
+      var spots = [[0.07, 0.05], [0.5, 0.09], [0.09, 0.4], [0.52, 0.44]];
+      var tilt = [-5, 6, 4, -6];
+      for (i = 0; i < n; i++)
+        slots.push(mk("capture", i + 1, spots[i][0], spots[i][1], 0.42, 0.32, { mask: "rounded", radius: 0.04, rotation: tilt[i] }));
+    } else { // filmstrip
+      var fh = 0.66 / n;
+      for (i = 0; i < n; i++)
+        slots.push(mk("capture", i + 1, 0.08, 0.04 + i * fh, 0.84, fh - 0.015, { mask: "none" }));
+    }
+    slots.push(mk("text", 1, 0.06, 0.76, 0.88, 0.1, { align: "center" }));
+    slots.push(mk("text", 2, 0.06, 0.87, 0.88, 0.06, { align: "center", color: "#8c8578" }));
+    state.slots = slots; state.selected = null;
+    render();
+  }
+
+  function mk(type, index, x, y, w, h, opt) {
+    opt = opt || {};
+    return {
+      id: ++uid, type: type, index: index,
+      rect: { x: x, y: y, w: w, h: h }, rotation: opt.rotation || 0,
+      mask: opt.mask || "none", radius: opt.radius != null ? opt.radius : 0.05,
+      align: opt.align || "center", src: opt.src || null,
+      color: opt.color || (type === "text" ? "#26221c" : null)
+    };
+  }
+
+  // ---- rendering -------------------------------------------------------
+  function setWrapSize() {
+    var maxW = Math.min(wrap.parentElement.clientWidth - 8, 460);
+    var maxH = Math.min(window.innerHeight - 300, 620);
+    var ratio = PRINT[state.orientation][0] / PRINT[state.orientation][1];
+    var w = maxW, h = w / ratio;
+    if (h > maxH) { h = maxH; w = h * ratio; }
+    wrap.style.width = Math.round(w) + "px";
+    wrap.style.height = Math.round(h) + "px";
+  }
+
+  function bgCss() {
+    if (state.background.mode === "image" && state.background.image)
+      return "center/cover no-repeat url(" + state.background.image + ")";
+    return state.background.color;
+  }
+
+  function render() {
+    setWrapSize();
+    canvas.style.background = bgCss();
+    canvas.innerHTML = "";
+    state.slots.forEach(function (s) {
+      var d = document.createElement("div");
+      d.className = "slot " + s.type + (state.selected === s.id ? " selected" : "");
+      d.style.left = (s.rect.x * 100) + "%";
+      d.style.top = (s.rect.y * 100) + "%";
+      d.style.width = (s.rect.w * 100) + "%";
+      d.style.height = (s.rect.h * 100) + "%";
+      d.style.transform = "rotate(" + (-s.rotation) + "deg)";
+      d.dataset.id = s.id;
+
+      var body = document.createElement("div");
+      body.className = "body";
+      if (s.type === "capture") {
+        var ci = (s.index - 1) % CAP_COLORS.length;
+        body.style.background = "linear-gradient(135deg," + CAP_COLORS[ci] + "," + shade(CAP_COLORS[ci], -18) + ")";
+        body.textContent = s.index;
+        body.style.borderRadius = maskCss(s);
+      } else if (s.type === "text") {
+        body.textContent = s.index === 1 ? "Footer 1" : "Footer 2";
+        body.style.color = s.color || "var(--ink)";
+        body.style.justifyContent = s.align === "left" ? "flex-start" : s.align === "right" ? "flex-end" : "center";
+        body.style.fontSize = Math.max(11, s.rect.h * wrap.clientHeight * 0.5) + "px";
+      } else if (s.type === "image") {
+        var img = document.createElement("img");
+        img.src = s.src; img.alt = ""; body.appendChild(img);
+      }
+      d.appendChild(body);
+
+      var badge = document.createElement("span");
+      badge.className = "badge";
+      badge.textContent = s.type === "capture" ? "Photo " + s.index : s.type === "text" ? "Footer " + s.index : "Sticker";
+      d.appendChild(badge);
+
+      var outline = document.createElement("div"); outline.className = "outline"; d.appendChild(outline);
+      var handle = document.createElement("div"); handle.className = "handle"; d.appendChild(handle);
+      canvas.appendChild(d);
+    });
+    renderInspector();
+    el("json").value = exportJSON();
+    updateNames();
+  }
+
+  function maskCss(s) {
+    if (s.mask === "circle") return "50%";
+    if (s.mask === "rounded") return (s.radius * 100) + "%";
+    return "0";
+  }
+
+  function updateNames() {
+    var slug = (state.name || "template").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "template";
+    el("fname").textContent = slug + ".json";
+    el("savename").textContent = "Suggested file: " + slug + ".json";
+    el("ruler").textContent = "4 × 6 in · " + state.orientation + " · " + PRINT[state.orientation][0] + " × " + PRINT[state.orientation][1] + " px";
+  }
+
+  function shade(hex, pct) {
+    var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    var f = function (c) { return Math.max(0, Math.min(255, Math.round(c + c * pct / 100))); };
+    return "rgb(" + f(r) + "," + f(g) + "," + f(b) + ")";
+  }
+
+  // ---- inspector -------------------------------------------------------
+  function renderInspector() {
+    var box = el("inspector");
+    var s = state.slots.find(function (x) { return x.id === state.selected; });
+    if (!s) { box.innerHTML = '<p class="empty-note">Nothing selected. Add a photo slot or pick one on the canvas.</p>'; return; }
+    var h = "";
+    var kind = s.type === "capture" ? "Photo slot" : s.type === "text" ? "Footer text" : "Sticker / logo";
+    h += '<p style="font-weight:700;margin:0 0 4px">' + kind + '</p>';
+
+    if (s.type === "capture") {
+      h += sel("Photo number", "index", capOptions(), s.index);
+      h += sel("Mask shape", "mask", [["none", "Rectangle"], ["rounded", "Rounded"], ["circle", "Circle / ellipse"]], s.mask);
+      if (s.mask === "rounded")
+        h += rng("Corner radius", "radius", 0, 0.5, 0.01, s.radius);
+    } else if (s.type === "text") {
+      h += sel("Which footer", "index", [[1, "Footer 1"], [2, "Footer 2"]], s.index);
+      h += sel("Align", "align", [["left", "Left"], ["center", "Center"], ["right", "Right"]], s.align);
+      h += '<div class="field"><label for="i-color">Text color</label><input type="color" id="i-color" value="' + (s.color || "#26221c") + '"></div>';
+    }
+    h += rng("Rotation", "rotation", -45, 45, 1, s.rotation, "°");
+    h += '<div class="row2">' +
+         num("X", "rx", s.rect.x) + num("Y", "ry", s.rect.y) +
+         num("Width", "rw", s.rect.w) + num("Height", "rh", s.rect.h) + '</div>';
+    h += '<div style="display:flex;gap:8px;margin-top:12px">' +
+         '<button class="btn" id="dup" type="button">Duplicate</button>' +
+         '<button class="btn danger" id="del" type="button">Delete</button></div>';
+    box.innerHTML = h;
+    wireInspector(s);
+  }
+
+  function capOptions() { var o = []; for (var i = 1; i <= state.captures; i++) o.push([i, "Photo " + i]); return o; }
+  function sel(label, key, opts, val) {
+    var id = "i-" + key, h = '<div class="field"><label for="' + id + '">' + label + '</label><select id="' + id + '">';
+    opts.forEach(function (o) { h += '<option value="' + o[0] + '"' + (String(o[0]) === String(val) ? " selected" : "") + '>' + o[1] + '</option>'; });
+    return h + '</select></div>';
+  }
+  function rng(label, key, min, max, step, val, unit) {
+    var id = "i-" + key;
+    return '<div class="field"><label for="' + id + '">' + label + ' · <span id="' + id + '-v">' + fmt(val) + (unit || "") + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '"></div>';
+  }
+  function num(label, key, val) {
+    var id = "i-" + key;
+    return '<div class="field"><label for="' + id + '">' + label + '</label><input type="number" id="' + id + '" min="0" max="1" step="0.01" value="' + fmt(val) + '"></div>';
+  }
+  function fmt(v) { return Math.round(v * 100) / 100; }
+
+  function wireInspector(s) {
+    var bind = function (id, ev, fn) { var e = el(id); if (e) e.addEventListener(ev, fn); };
+    bind("i-index", "change", function () { s.index = parseInt(this.value, 10); render(); });
+    bind("i-mask", "change", function () { s.mask = this.value; render(); });
+    bind("i-align", "change", function () { s.align = this.value; render(); });
+    bind("i-color", "input", function () { s.color = this.value; render(); });
+    bind("i-radius", "input", function () { s.radius = parseFloat(this.value); el("i-radius-v").textContent = fmt(s.radius); liveRender(); });
+    bind("i-radius", "change", syncJSON);
+    bind("i-rotation", "input", function () { s.rotation = parseInt(this.value, 10); el("i-rotation-v").textContent = s.rotation + "°"; liveRender(); });
+    bind("i-rotation", "change", syncJSON);
+    ["rx", "ry", "rw", "rh"].forEach(function (k) {
+      bind("i-" + k, "input", function () {
+        var v = Math.max(0, Math.min(1, parseFloat(this.value) || 0));
+        s.rect[k.charAt(1)] = v; liveRender();
+      });
+      bind("i-" + k, "change", syncJSON);
+    });
+    bind("del", "click", function () { state.slots = state.slots.filter(function (x) { return x.id !== s.id; }); state.selected = null; render(); });
+    bind("dup", "click", function () {
+      var c = JSON.parse(JSON.stringify(s)); c.id = ++uid;
+      c.rect.x = Math.min(0.9, c.rect.x + 0.03); c.rect.y = Math.min(0.9, c.rect.y + 0.03);
+      state.slots.push(c); state.selected = c.id; render();
+    });
+  }
+
+  // Re-render only the moving slot's box, without rebuilding the inspector or
+  // the JSON textarea (rebuilding the JSON every pointermove is what made
+  // dragging janky, especially with a large background image). The JSON is
+  // refreshed once when the drag/slider interaction ends.
+  function liveRender() {
+    var node = canvas.querySelector('.slot[data-id="' + state.selected + '"]');
+    var s = state.slots.find(function (x) { return x.id === state.selected; });
+    if (!node || !s) return render();
+    node.style.left = (s.rect.x * 100) + "%"; node.style.top = (s.rect.y * 100) + "%";
+    node.style.width = (s.rect.w * 100) + "%"; node.style.height = (s.rect.h * 100) + "%";
+    node.style.transform = "rotate(" + (-s.rotation) + "deg)";
+    if (s.type === "capture") node.querySelector(".body").style.borderRadius = maskCss(s);
+  }
+
+  function syncJSON() { el("json").value = exportJSON(); }
+
+  // ---- drag & resize ---------------------------------------------------
+  var drag = null;
+  canvas.addEventListener("pointerdown", function (e) {
+    var slotEl = e.target.closest(".slot");
+    if (!slotEl) { state.selected = null; render(); return; }
+    var s = state.slots.find(function (x) { return x.id === parseInt(slotEl.dataset.id, 10); });
+    state.selected = s.id;
+    var resize = e.target.classList.contains("handle");
+    var rect = wrap.getBoundingClientRect();
+    drag = { s: s, resize: resize, startX: e.clientX, startY: e.clientY,
+             ox: s.rect.x, oy: s.rect.y, ow: s.rect.w, oh: s.rect.h, W: rect.width, H: rect.height };
+    slotEl.classList.add("dragging");
+    slotEl.setPointerCapture(e.pointerId);
+    render();
+    e.preventDefault();
+  });
+  var rafPending = false;
+  canvas.addEventListener("pointermove", function (e) {
+    if (!drag) return;
+    var dx = (e.clientX - drag.startX) / drag.W, dy = (e.clientY - drag.startY) / drag.H;
+    if (drag.resize) {
+      drag.s.rect.w = Math.max(0.05, Math.min(1 - drag.s.rect.x, drag.ow + dx));
+      drag.s.rect.h = Math.max(0.03, Math.min(1 - drag.s.rect.y, drag.oh + dy));
+    } else {
+      drag.s.rect.x = Math.max(0, Math.min(1 - drag.s.rect.w, drag.ox + dx));
+      drag.s.rect.y = Math.max(0, Math.min(1 - drag.s.rect.h, drag.oy + dy));
+    }
+    // Coalesce moves to at most one DOM update per animation frame
+    if (!rafPending) {
+      rafPending = true;
+      requestAnimationFrame(function () { rafPending = false; liveRender(); });
+    }
+  });
+  canvas.addEventListener("pointerup", function () {
+    if (!drag) return;
+    var node = canvas.querySelector(".slot.dragging"); if (node) node.classList.remove("dragging");
+    drag = null; liveRender(); renderInspector(); syncJSON();
+  });
+
+  // ---- add / tools -----------------------------------------------------
+  function nextCaptureIndex() {
+    var used = state.slots.filter(function (s) { return s.type === "capture"; }).map(function (s) { return s.index; });
+    for (var i = 1; i <= state.captures; i++) if (used.indexOf(i) === -1) return i;
+    return state.captures;
+  }
+  el("add-capture").addEventListener("click", function () {
+    state.slots.push(mk("capture", nextCaptureIndex(), 0.2, 0.2, 0.45, 0.32, { mask: "rounded", radius: 0.05 }));
+    state.selected = uid; render();
+  });
+  el("add-text").addEventListener("click", function () {
+    var hasFooter1 = state.slots.some(function (s) { return s.type === "text" && s.index === 1; });
+    state.slots.push(mk("text", hasFooter1 ? 2 : 1, 0.1, 0.8, 0.8, 0.08, { align: "center" }));
+    state.selected = uid; render();
+  });
+  el("add-image-file").addEventListener("change", function () {
+    readFile(this.files[0], function (data) {
+      state.slots.push(mk("image", 0, 0.35, 0.35, 0.3, 0.2, { src: data }));
+      state.selected = uid; render();
+    });
+    this.value = "";
+  });
+
+  // ---- background ------------------------------------------------------
+  var SW = ["#f4f1ea", "#ffffff", "#111111", "#f7d9d4", "#d1483f", "#2f6f6a", "#f0c419", "#264653"];
+  var sw = el("bgswatches");
+  SW.forEach(function (c) {
+    var b = document.createElement("button"); b.type = "button"; b.style.background = c; b.title = c;
+    b.addEventListener("click", function () { state.background.color = c; el("bgcolor").value = c; render(); });
+    sw.appendChild(b);
+  });
+  el("bgcolor").addEventListener("input", function () { state.background.color = this.value; render(); });
+  el("bgfile").addEventListener("change", function () {
+    readFile(this.files[0], function (data) { state.background.image = data; state.background.mode = "image"; syncBgMode(); render(); });
+  });
+  seg("bgmode", "b", function (v) { state.background.mode = v; if (v === "image" && !state.background.image) el("bgfile").click(); syncBgMode(); render(); });
+  function syncBgMode() {
+    var img = state.background.mode === "image";
+    el("bg-color-field").hidden = img; el("bg-image-field").hidden = !img;
+    setPressed("bgmode", "b", state.background.mode);
+  }
+
+  // ---- header controls -------------------------------------------------
+  el("tname").addEventListener("input", function () { state.name = this.value; updateNames(); el("json").value = exportJSON(); });
+  seg("captures", "n", function (v) {
+    state.captures = parseInt(v, 10);
+    state.slots = state.slots.filter(function (s) { return s.type !== "capture" || s.index <= state.captures; });
+    render();
+  });
+  seg("orient", "o", function (v) { state.orientation = v; render(); });
+  document.querySelectorAll("[data-preset]").forEach(function (b) {
+    b.addEventListener("click", function () { preset(b.dataset.preset); });
+  });
+  seg("theme", "t", function (v) { document.documentElement.setAttribute("data-theme", v); setPressed("theme", "t", v); setTimeout(render, 0); });
+
+  function seg(id, attr, fn) {
+    el(id).addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-" + attr + "]"); if (!b) return;
+      setPressed(id, attr, b.dataset[attr]); fn(b.dataset[attr]);
+    });
+  }
+  function setPressed(id, attr, val) {
+    el(id).querySelectorAll("button[data-" + attr + "]").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset[attr] === String(val) ? "true" : "false");
+    });
+  }
+
+  // ---- import / export -------------------------------------------------
+  function hexToRgb(hex) {
+    var n = parseInt(hex.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255];
+  }
+  function rgbToHex(a) { return "#" + a.map(function (c) { return ("0" + (c & 255).toString(16)).slice(-2); }).join(""); }
+
+  function exportJSON() {
+    var bg = state.background.mode === "image" && state.background.image
+      ? { image: state.background.image } : { color: hexToRgb(state.background.color) };
+    var slots = state.slots.map(function (s) {
+      var o = { type: s.type, rect: [r(s.rect.x), r(s.rect.y), r(s.rect.w), r(s.rect.h)] };
+      if (s.rotation) o.rotation = s.rotation;
+      if (s.type === "capture") { o.index = s.index; o.mask = s.mask; if (s.mask === "rounded") o.radius = r(s.radius); o.crop = true; }
+      else if (s.type === "text") { o.index = s.index; o.align = s.align; o.font = "Amatic-Bold"; o.color = hexToRgb(s.color || "#26221c"); }
+      else if (s.type === "image") { o.src = s.src; }
+      return o;
+    });
+    return JSON.stringify({
+      format: "pibooth-template", version: 1, name: state.name,
+      captures: state.captures, orientation: state.orientation,
+      background: bg, slots: slots
+    }, replacer, 2);
+  }
+  function r(v) { return Math.round(v * 1000) / 1000; }
+  function replacer(k, v) { return typeof v === "string" && v.length > 100 ? v.slice(0, 40) + "…[" + v.length + " chars]" : v; }
+
+  function fullJSON() {
+    // Same as exportJSON but with full image data (for copy)
+    var text = exportJSON();
+    // Rebuild without truncation
+    var bg = state.background.mode === "image" && state.background.image
+      ? { image: state.background.image } : { color: hexToRgb(state.background.color) };
+    var slots = state.slots.map(function (s) {
+      var o = { type: s.type, rect: [r(s.rect.x), r(s.rect.y), r(s.rect.w), r(s.rect.h)] };
+      if (s.rotation) o.rotation = s.rotation;
+      if (s.type === "capture") { o.index = s.index; o.mask = s.mask; if (s.mask === "rounded") o.radius = r(s.radius); o.crop = true; }
+      else if (s.type === "text") { o.index = s.index; o.align = s.align; o.font = "Amatic-Bold"; o.color = hexToRgb(s.color || "#26221c"); }
+      else if (s.type === "image") { o.src = s.src; }
+      return o;
+    });
+    return JSON.stringify({ format: "pibooth-template", version: 1, name: state.name, captures: state.captures, orientation: state.orientation, background: bg, slots: slots }, null, 2);
+  }
+
+  el("copy").addEventListener("click", function () {
+    var text = fullJSON();
+    navigator.clipboard && navigator.clipboard.writeText(text).then(
+      function () { toast("Copied — save it as " + el("fname").textContent); },
+      function () { fallbackCopy(text); });
+  });
+  function fallbackCopy(text) { var t = el("json"); t.value = text; t.select(); try { document.execCommand("copy"); toast("Copied"); } catch (e) { toast("Select the text and copy"); } render(); }
+
+  el("load").addEventListener("click", function () {
+    try {
+      var raw = el("json").value.trim(); if (!raw) return;
+      var d = JSON.parse(raw);
+      if (d.format !== "pibooth-template") throw 0;
+      state.name = d.name || "Imported";
+      state.captures = d.captures || 4;
+      state.orientation = d.orientation === "landscape" ? "landscape" : "portrait";
+      if (d.background && d.background.image) state.background = { mode: "image", image: d.background.image, color: "#f4f1ea" };
+      else state.background = { mode: "color", color: rgbToHex((d.background && d.background.color) || [244, 241, 234]), image: null };
+      state.slots = (d.slots || []).map(function (o) {
+        return mk(o.type, o.index || 0, o.rect[0], o.rect[1], o.rect[2], o.rect[3],
+          { mask: o.mask, radius: o.radius, rotation: o.rotation, align: o.align, src: o.src,
+            color: o.color ? rgbToHex(o.color) : null });
+      });
+      state.selected = null;
+      el("tname").value = state.name;
+      setPressed("captures", "n", state.captures); setPressed("orient", "o", state.orientation);
+      syncBgMode(); el("bgcolor").value = state.background.color; render();
+      toast("Template loaded");
+    } catch (e) { toast("That is not a valid template JSON"); }
+  });
+
+  function readFile(file, cb) { if (!file) return; var fr = new FileReader(); fr.onload = function () { cb(fr.result); }; fr.readAsDataURL(file); }
+  var toastT;
+  function toast(msg) { var t = el("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove("show"); }, 2200); }
+
+  window.addEventListener("resize", function () { render(); });
+
+  // ---- local pibooth backend (optional) --------------------------------
+  var LOCAL = false;
+  function status(msg) { var e = el("local-status"); if (e) e.textContent = msg; }
+
+  function initLocal() {
+    fetch("/api/ping").then(function (r) { return r.ok ? r.json() : Promise.reject(); }).then(function (info) {
+      LOCAL = true;
+      document.body.classList.add("local");
+      status("Config: " + info.config_dir);
+      refreshTemplates();
+    }).catch(function () { /* opened as a file or artifact: copy/paste mode */ });
+  }
+
+  function refreshTemplates() {
+    fetch("/api/templates").then(function (r) { return r.json(); }).then(function (d) {
+      var sel = el("tpl-list");
+      sel.innerHTML = '<option value="">Existing templates…</option>';
+      (d.templates || []).forEach(function (t) {
+        var o = document.createElement("option");
+        o.value = t.file; o.textContent = t.name + " (" + t.type + (t.captures ? ", " + t.captures + "p" : "") + ")";
+        o.disabled = t.type !== "json";
+        sel.appendChild(o);
+      });
+    });
+  }
+
+  function bindLocal() {
+    el("tpl-open").addEventListener("click", function () {
+      var f = el("tpl-list").value; if (!f) return;
+      fetch("/api/template/" + encodeURIComponent(f)).then(function (r) { return r.json(); }).then(function (d) {
+        el("json").value = JSON.stringify(d.template, null, 2);
+        el("load").click();
+        status("Opened " + f);
+      });
+    });
+    el("save-local").addEventListener("click", function () {
+      var payload = JSON.parse(fullJSON());
+      fetch("/api/template", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+        .then(function (r) { return r.json(); }).then(function (d) {
+          if (!d.ok) throw new Error(d.error || "save failed");
+          status("Saved as " + d.file);
+          toast("Saved to pibooth: " + d.file);
+          refreshTemplates();
+          if (el("register").checked) {
+            fetch("/api/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ file: d.file }) })
+              .then(function (r) { return r.json(); }).then(function (rd) {
+                if (rd.ok) status("Saved " + d.file + " and registered in pibooth.cfg");
+              });
+          }
+        }).catch(function (e) { toast("Save failed: " + e.message); });
+    });
+    el("real-preview").addEventListener("click", function () {
+      status("Rendering with the pibooth engine…");
+      var payload = JSON.parse(fullJSON());
+      fetch("/api/preview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+        .then(function (r) { if (!r.ok) return r.json().then(function (e) { throw new Error(e.error); }); return r.blob(); })
+        .then(function (blob) {
+          var img = el("preview-img"); img.src = URL.createObjectURL(blob); img.hidden = false;
+          status("Real pibooth render (placeholder photos)");
+        }).catch(function (e) { status("Preview failed: " + e.message); });
+    });
+  }
+
+  // Boot in a realistic working state
+  syncBgMode();
+  preset("grid");
+  bindLocal();
+  initLocal();
+})();
+</script>

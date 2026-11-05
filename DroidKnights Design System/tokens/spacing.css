@@ -1,0 +1,28 @@
+/* DroidKnights — Spacing & radius tokens
+   Slide rhythm derived from the 1920×1080 template:
+   110 side padding · 90 top padding · 48 title→body · 26 list gap. */
+:root {
+  --dk-space-1: 4px;
+  --dk-space-2: 8px;
+  --dk-space-3: 12px;
+  --dk-space-4: 16px;
+  --dk-space-5: 26px;   /* list-item gap */
+  --dk-space-6: 32px;
+  --dk-space-7: 48px;   /* title → body */
+  --dk-space-8: 64px;
+  --dk-space-9: 90px;   /* slide top padding */
+  --dk-space-10: 110px; /* slide side padding */
+
+  /* Radius */
+  --dk-radius-chip: 999px;
+  --dk-radius-code: 20px;
+  --dk-radius-card: 22px;
+  --dk-radius-sm: 12px;
+  --dk-radius-lg: 28px;
+
+  /* Slide geometry */
+  --dk-slide-w: 1920px;      /* @kind spacing */
+  --dk-slide-h: 1080px;      /* @kind spacing */
+  --dk-slide-pad-x: 110px;   /* @kind spacing */
+  --dk-slide-pad-y: 90px;    /* @kind spacing */
+}

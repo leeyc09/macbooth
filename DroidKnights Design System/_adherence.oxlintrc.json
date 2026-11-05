@@ -1,0 +1,314 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "components/brand/**",
+              "components/core/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Space Grotesk|Noto Sans KR|Roboto Mono))/i]",
+        "message": "Font not provided by the design system. Available: Space Grotesk, Noto Sans KR, Roboto Mono."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Badge'] > JSXAttribute > JSXIdentifier[name!=/^(?:tone|key|ref|className|style|children)$/]",
+        "message": "<Badge> doesn't accept that prop. Declared props: tone."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Badge'] > JSXAttribute[name.name='tone'] > Literal[value!=/^(?:label|solid|platinum|gold|silver|bronze)$/]",
+        "message": "<Badge> tone must be one of 'label' | 'solid' | 'platinum' | 'gold' | 'silver' | 'bronze'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute > JSXIdentifier[name!=/^(?:variant|size|icon|arrow|href|key|ref|className|style|children)$/]",
+        "message": "<Button> doesn't accept that prop. Declared props: variant, size, icon, arrow, href."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:primary|secondary|ghost)$/]",
+        "message": "<Button> variant must be one of 'primary' | 'secondary' | 'ghost'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:md|lg)$/]",
+        "message": "<Button> size must be one of 'md' | 'lg'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Card'] > JSXAttribute > JSXIdentifier[name!=/^(?:glow|padded|as|key|ref|className|style|children)$/]",
+        "message": "<Card> doesn't accept that prop. Declared props: glow, padded, as."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Chip'] > JSXAttribute > JSXIdentifier[name!=/^(?:active|as|key|ref|className|style|children)$/]",
+        "message": "<Chip> doesn't accept that prop. Declared props: active, as."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='CodeBlock'] > JSXAttribute > JSXIdentifier[name!=/^(?:title|key|ref|className|style|children)$/]",
+        "message": "<CodeBlock> doesn't accept that prop. Declared props: title."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Icon'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|size|color|strokeWidth|key|ref|className|style|children)$/]",
+        "message": "<Icon> doesn't accept that prop. Declared props: name, size, color, strokeWidth."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Icon'] > JSXAttribute[name.name='name'] > Literal[value!=/^(?:booth|session|badge|goods|calendar|ticket|location|clock|mic|code)$/]",
+        "message": "<Icon> name must be one of 'booth' | 'session' | 'badge' | 'goods' | 'calendar' | 'ticket' | 'location' | 'clock' | 'mic' | 'code'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Mascot'] > JSXAttribute > JSXIdentifier[name!=/^(?:pose|base|src|size|glow|key|ref|className|style|children)$/]",
+        "message": "<Mascot> doesn't accept that prop. Declared props: pose, base, src, size, glow."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Mascot'] > JSXAttribute[name.name='pose'] > Literal[value!=/^(?:hero|wave|point|cheer|laptop|flag|welcome|fly|portal|back)$/]",
+        "message": "<Mascot> pose must be one of 'hero' | 'wave' | 'point' | 'cheer' | 'laptop' | 'flag' | 'welcome' | 'fly' | 'portal' | 'back'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Sparkle'] > JSXAttribute > JSXIdentifier[name!=/^(?:size|color|glow|key|ref|className|style|children)$/]",
+        "message": "<Sparkle> doesn't accept that prop. Declared props: size, color, glow."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Stat'] > JSXAttribute > JSXIdentifier[name!=/^(?:value|suffix|label|key|ref|className|style|children)$/]",
+        "message": "<Stat> doesn't accept that prop. Declared props: value, suffix, label."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {
+      "Badge": {
+        "replaces": []
+      },
+      "Button": {
+        "replaces": []
+      },
+      "Card": {
+        "replaces": []
+      },
+      "Chip": {
+        "replaces": []
+      },
+      "CodeBlock": {
+        "replaces": []
+      },
+      "Eyebrow": {
+        "replaces": []
+      },
+      "Icon": {
+        "replaces": []
+      },
+      "Mascot": {
+        "replaces": []
+      },
+      "Sparkle": {
+        "replaces": []
+      },
+      "Stat": {
+        "replaces": []
+      }
+    },
+    "tokens": [
+      "--dk-accent",
+      "--dk-accent-2",
+      "--dk-bg",
+      "--dk-blue",
+      "--dk-blur",
+      "--dk-border",
+      "--dk-border-strong",
+      "--dk-dur",
+      "--dk-dur-fast",
+      "--dk-dur-slow",
+      "--dk-ease",
+      "--dk-ease-out",
+      "--dk-font-body",
+      "--dk-font-display",
+      "--dk-font-mono",
+      "--dk-fs-body",
+      "--dk-fs-body-lg",
+      "--dk-fs-caption",
+      "--dk-fs-eyebrow",
+      "--dk-fs-h1",
+      "--dk-fs-h2",
+      "--dk-fs-hero",
+      "--dk-fs-slide-title",
+      "--dk-glass-bg",
+      "--dk-glass-border",
+      "--dk-glow",
+      "--dk-glow-mascot",
+      "--dk-glow-sm",
+      "--dk-grad",
+      "--dk-grad-brand",
+      "--dk-grad-galaxy",
+      "--dk-lavender",
+      "--dk-lh-body",
+      "--dk-lh-snug",
+      "--dk-lh-tight",
+      "--dk-light-bg",
+      "--dk-link",
+      "--dk-navy",
+      "--dk-navy-2",
+      "--dk-on-accent",
+      "--dk-purple",
+      "--dk-radius-card",
+      "--dk-radius-chip",
+      "--dk-radius-code",
+      "--dk-radius-lg",
+      "--dk-radius-sm",
+      "--dk-shadow-card",
+      "--dk-shadow-raised",
+      "--dk-slide-h",
+      "--dk-slide-pad-x",
+      "--dk-slide-pad-y",
+      "--dk-slide-w",
+      "--dk-space",
+      "--dk-space-1",
+      "--dk-space-10",
+      "--dk-space-2",
+      "--dk-space-3",
+      "--dk-space-4",
+      "--dk-space-5",
+      "--dk-space-6",
+      "--dk-space-7",
+      "--dk-space-8",
+      "--dk-space-9",
+      "--dk-surface",
+      "--dk-surface-raised",
+      "--dk-text",
+      "--dk-text-dim",
+      "--dk-text-ink",
+      "--dk-text-ink-dim",
+      "--dk-text-muted",
+      "--dk-tier-bronze",
+      "--dk-tier-gold",
+      "--dk-tier-platinum",
+      "--dk-tier-silver",
+      "--dk-tracking-eyebrow",
+      "--dk-tracking-tight",
+      "--dk-w-black",
+      "--dk-w-bold",
+      "--dk-w-light",
+      "--dk-w-medium",
+      "--dk-w-regular"
+    ],
+    "tokenKinds": {
+      "--dk-blue": "color",
+      "--dk-purple": "color",
+      "--dk-lavender": "color",
+      "--dk-space": "spacing",
+      "--dk-navy": "color",
+      "--dk-navy-2": "color",
+      "--dk-light-bg": "color",
+      "--dk-text": "font",
+      "--dk-text-dim": "font",
+      "--dk-text-muted": "font",
+      "--dk-text-ink": "font",
+      "--dk-text-ink-dim": "font",
+      "--dk-border": "color",
+      "--dk-border-strong": "color",
+      "--dk-tier-platinum": "color",
+      "--dk-tier-gold": "color",
+      "--dk-tier-silver": "color",
+      "--dk-tier-bronze": "color",
+      "--dk-grad": "color",
+      "--dk-grad-brand": "color",
+      "--dk-grad-galaxy": "color",
+      "--dk-bg": "color",
+      "--dk-surface": "color",
+      "--dk-surface-raised": "color",
+      "--dk-accent": "color",
+      "--dk-accent-2": "color",
+      "--dk-on-accent": "color",
+      "--dk-link": "color",
+      "--dk-font-display": "font",
+      "--dk-font-body": "font",
+      "--dk-font-mono": "font",
+      "--dk-w-light": "font",
+      "--dk-w-regular": "font",
+      "--dk-w-medium": "font",
+      "--dk-w-bold": "font",
+      "--dk-w-black": "font",
+      "--dk-fs-hero": "spacing",
+      "--dk-fs-slide-title": "spacing",
+      "--dk-fs-h1": "spacing",
+      "--dk-fs-h2": "spacing",
+      "--dk-fs-body": "spacing",
+      "--dk-fs-body-lg": "spacing",
+      "--dk-fs-caption": "spacing",
+      "--dk-fs-eyebrow": "spacing",
+      "--dk-lh-tight": "font",
+      "--dk-lh-snug": "font",
+      "--dk-lh-body": "font",
+      "--dk-tracking-eyebrow": "font",
+      "--dk-tracking-tight": "font",
+      "--dk-space-1": "spacing",
+      "--dk-space-2": "spacing",
+      "--dk-space-3": "spacing",
+      "--dk-space-4": "spacing",
+      "--dk-space-5": "spacing",
+      "--dk-space-6": "spacing",
+      "--dk-space-7": "spacing",
+      "--dk-space-8": "spacing",
+      "--dk-space-9": "spacing",
+      "--dk-space-10": "spacing",
+      "--dk-radius-chip": "radius",
+      "--dk-radius-code": "radius",
+      "--dk-radius-card": "radius",
+      "--dk-radius-sm": "radius",
+      "--dk-radius-lg": "radius",
+      "--dk-slide-w": "spacing",
+      "--dk-slide-h": "spacing",
+      "--dk-slide-pad-x": "spacing",
+      "--dk-slide-pad-y": "spacing",
+      "--dk-glow": "shadow",
+      "--dk-glow-sm": "shadow",
+      "--dk-glow-mascot": "shadow",
+      "--dk-shadow-card": "shadow",
+      "--dk-shadow-raised": "shadow",
+      "--dk-glass-bg": "color",
+      "--dk-glass-border": "other",
+      "--dk-blur": "other",
+      "--dk-ease": "other",
+      "--dk-ease-out": "other",
+      "--dk-dur-fast": "other",
+      "--dk-dur": "other",
+      "--dk-dur-slow": "other"
+    },
+    "fontFamilies": [
+      "Noto Sans KR",
+      "Roboto Mono",
+      "Space Grotesk"
+    ]
+  }
+}

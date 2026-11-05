@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MacBooth Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+  :root {
+    --space: #0B1230; --navy: #0E1A3A; --navy-2: #16234A;
+    --blue: #2D7BFF; --purple: #7B5CFF; --lavender: #B18CFF;
+    --text: #EAF0FF; --text-dim: #B9C6E8; --text-muted: #8B99C0;
+    --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.16);
+    --grad-brand: linear-gradient(135deg, #2D7BFF, #7B5CFF);
+    --ok: #2BE38A; --warn: #F0B537; --err: #FF5C7A;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--space); }
+  body { margin: 0; min-height: 100vh; color: var(--text); font: 16px/1.5 'Noto Sans KR', -apple-system, sans-serif;
+    background: radial-gradient(900px 500px at 10% -10%, rgba(45,123,255,.22), transparent 70%),
+                radial-gradient(900px 600px at 100% 0%, rgba(123,92,255,.22), transparent 70%), var(--space); }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 120px; }
+  header { margin-bottom: 24px; }
+  .eyebrow { font: 600 13px/1 'Space Grotesk'; letter-spacing: .22em; color: var(--lavender); margin: 0 0 10px; }
+  h1 { font: 900 30px/1.2 'Noto Sans KR'; margin: 0; letter-spacing: -.02em; }
+  .lead { color: var(--text-muted); margin: 8px 0 0; font-size: 14px; }
+  section { background: var(--navy); border: 1px solid var(--line); border-radius: 22px; padding: 8px 22px; margin-top: 16px; }
+  section h2 { font: 700 13px/1 'Space Grotesk'; letter-spacing: .18em; color: var(--lavender); margin: 18px 0 6px; text-transform: uppercase; }
+  .field { display: grid; grid-template-columns: 1fr minmax(0, 300px); gap: 8px 16px; align-items: center;
+    padding: 16px 0; border-top: 1px solid var(--line); }
+  section h2 + .field { border-top: 0; }
+  .label { font-weight: 700; }
+  .badge { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px; font: 600 11px/1.6 'Noto Sans KR';
+    color: var(--warn); border: 1px solid rgba(240,181,55,.4); vertical-align: 2px; }
+  .help { grid-column: 1 / -1; color: var(--text-muted); font-size: 13px; margin-top: -4px; }
+  select, input[type=number], input[type=text], input[type=password] { width: 100%; padding: 10px 12px; border-radius: 12px;
+    border: 1px solid var(--line-strong); background: var(--space); color: var(--text); font: inherit; }
+  select:focus, input:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  .chip { position: relative; }
+  .chip input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+  .chip span { display: inline-block; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line-strong);
+    color: var(--text-dim); font-size: 14px; transition: all .15s; }
+  .chip input:checked + span { background: var(--grad-brand); border-color: transparent; color: #fff; }
+  .chip input:focus-visible + span { outline: 2px solid var(--lavender); outline-offset: 2px; }
+  .empty { color: var(--text-muted); font-size: 13px; text-align: right; }
+  .switch { justify-self: end; position: relative; width: 52px; height: 30px; }
+  .switch input { position: absolute; opacity: 0; inset: 0; cursor: pointer; z-index: 1; }
+  .switch span { position: absolute; inset: 0; border-radius: 999px; background: var(--navy-2); border: 1px solid var(--line-strong); transition: .15s; }
+  .switch span::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--text-dim); transition: .15s; }
+  .switch input:checked + span { background: var(--grad-brand); border-color: transparent; }
+  .switch input:checked + span::after { left: 25px; background: #fff; }
+  .bar { position: fixed; left: 0; right: 0; bottom: 0; padding: 14px 16px; background: rgba(11,18,48,.92);
+    backdrop-filter: blur(14px); border-top: 1px solid var(--line); }
+  .bar .inner { max-width: 760px; margin: 0 auto; display: flex; gap: 12px; align-items: center; }
+  .status { flex: 1; font-size: 14px; color: var(--text-muted); }
+  .status.ok { color: var(--ok); } .status.warn { color: var(--warn); } .status.err { color: var(--err); }
+  button { border: 0; border-radius: 999px; padding: 12px 26px; font: 700 15px 'Noto Sans KR'; cursor: pointer; color: #fff; background: var(--grad-brand);
+    box-shadow: 0 8px 24px rgba(45,123,255,.35); }
+  button:disabled { opacity: .45; cursor: default; box-shadow: none; }
+  button.ghost { background: transparent; border: 1px solid var(--line-strong); color: var(--text-dim); box-shadow: none; }
+  .pin { max-width: 320px; margin: 40px auto; text-align: center; }
+  .pin input { margin: 14px 0; text-align: center; font-size: 22px; letter-spacing: .3em; }
+  @media (max-width: 560px) { .field { grid-template-columns: 1fr; } .chips { justify-content: flex-start; } .switch { justify-self: start; } .empty { text-align: left; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="eyebrow">✦ MACBOOTH</p>
+    <h1>설정</h1>
+    <p class="lead">저장하면 진행 중인 촬영이 끝나고 대기 화면으로 돌아올 때 바로 적용됩니다. <span class="badge">재시작 필요</span> 표시 항목은 pibooth를 다시 시작해야 적용됩니다.</p>
+  </header>
+  <div id="form"></div>
+</main>
+<div class="bar"><div class="inner">
+  <span class="status" id="status" role="status"></span>
+  <button class="ghost" id="reset" type="button" disabled>되돌리기</button>
+  <button id="save" type="button" disabled>저장</button>
+</div></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let pin = '';
+let groups = [];
+let original = {};
+
+function headers() {
+  return pin ? { 'X-Settings-Pin': pin } : {};
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+
+function setStatus(text, kind = '') {
+  $('status').textContent = text;
+  $('status').className = 'status ' + kind;
+}
+
+function control(field, id) {
+  const v = field.value;
+  if (field.kind === 'bool') {
+    return `<label class="switch"><input type="checkbox" id="${id}" ${v ? 'checked' : ''} aria-label="${escapeHtml(field.label)}"><span></span></label>`;
+  }
+  if (field.kind === 'select') {
+    const options = field.choices.map((c) => `<option value="${escapeHtml(c.value)}" ${c.value === v ? 'selected' : ''}>${escapeHtml(c.label)}</option>`);
+    return `<select id="${id}">${options.join('')}</select>`;
+  }
+  if (field.kind === 'multi' || field.kind === 'multi_int') {
+    if (!field.choices.length) return '<span class="empty">선택할 수 있는 항목이 없습니다</span>';
+    const chips = field.choices.map((c) => `<label class="chip"><input type="checkbox" name="${id}" value="${escapeHtml(c.value)}"
+      ${v.includes(c.value) ? 'checked' : ''}><span>${escapeHtml(c.label)}</span></label>`);
+    return `<div class="chips" id="${id}">${chips.join('')}</div>`;
+  }
+  if (field.kind === 'int' || field.kind === 'float') {
+    const step = field.kind === 'float' ? '0.1' : '1';
+    return `<input type="number" id="${id}" value="${v}" step="${step}" ${'min' in field ? `min="${field.min}"` : ''} ${'max' in field ? `max="${field.max}"` : ''}>`;
+  }
+  return `<input type="text" id="${id}" value="${escapeHtml(v)}">`;
+}
+
+function render() {
+  $('form').innerHTML = groups.map((group, g) => `<section><h2>${escapeHtml(group.title)}</h2>
+    ${group.fields.map((field, f) => `<div class="field">
+      <label class="label" for="f${g}_${f}">${escapeHtml(field.label)}${field.live ? '' : '<span class="badge">재시작 필요</span>'}</label>
+      ${control(field, `f${g}_${f}`)}
+      ${field.help ? `<div class="help">${escapeHtml(field.help)}</div>` : ''}
+    </div>`).join('')}</section>`).join('');
+  original = JSON.stringify(collect());
+  $('form').addEventListener('input', onEdit);
+  $('form').addEventListener('change', onEdit);
+}
+
+function readField(field, id) {
+  if (field.kind === 'bool') return $(id).checked;
+  if (field.kind === 'multi' || field.kind === 'multi_int') {
+    // Keep the order of the choices (the first fixed frame wins)
+    const checked = [...document.querySelectorAll(`input[name="${id}"]:checked`)].map((i) => i.value);
+    const values = field.choices.map((c) => c.value).filter((value) => checked.includes(String(value)));
+    return values;
+  }
+  if (field.kind === 'int') return parseInt($(id).value, 10);
+  if (field.kind === 'float') return parseFloat($(id).value);
+  return $(id) ? $(id).value : field.value;
+}
+
+function collect() {
+  const values = {};
+  groups.forEach((group, g) => group.fields.forEach((field, f) => {
+    values[field.key] = readField(field, `f${g}_${f}`);
+  }));
+  return values;
+}
+
+function onEdit() {
+  const dirty = JSON.stringify(collect()) !== original;
+  $('save').disabled = !dirty;
+  $('reset').disabled = !dirty;
+  setStatus(dirty ? '저장하지 않은 변경 사항이 있습니다' : '');
+}
+
+async function load() {
+  const res = await fetch('api/settings', { headers: headers(), cache: 'no-store' });
+  const data = await res.json();
+  if (data.pin && !data.authorized) return askPin(!!pin);
+  groups = data.groups;
+  render();
+  onEdit();
+}
+
+function askPin(wrong) {
+  $('form').innerHTML = `<div class="pin"><p>${wrong ? 'PIN이 맞지 않습니다. ' : ''}설정 PIN을 입력하세요</p>
+    <input type="password" id="pin" inputmode="numeric" autocomplete="off"><button id="pinok" type="button">확인</button></div>`;
+  $('pin').focus();
+  const submit = () => { pin = $('pin').value; load(); };
+  $('pinok').onclick = submit;
+  $('pin').onkeydown = (e) => { if (e.key === 'Enter') submit(); };
+}
+
+$('save').onclick = async () => {
+  $('save').disabled = true;
+  setStatus('저장 중…');
+  try {
+    const res = await fetch('api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers() },
+      body: JSON.stringify({ values: collect() }) });
+    const data = await res.json();
+    if (!res.ok) { setStatus(data.error || '저장하지 못했습니다', 'err'); $('save').disabled = false; return; }
+    original = JSON.stringify(collect());
+    $('reset').disabled = true;
+    if (!data.changed.length) setStatus('바뀐 설정이 없습니다');
+    else if (data.restart.length) setStatus(`저장됨. 재시작 후 적용: ${data.restart.join(', ')}`, 'warn');
+    else setStatus('저장됨. 대기 화면에서 바로 적용됩니다', 'ok');
+  } catch (e) {
+    setStatus('pibooth에 연결할 수 없습니다', 'err');
+    $('save').disabled = false;
+  }
+};
+
+$('reset').onclick = () => { load(); setStatus(''); };
+addEventListener('beforeunload', (e) => { if (!$('save').disabled) e.preventDefault(); });
+
+load().catch(() => setStatus('pibooth에 연결할 수 없습니다. pibooth가 실행 중인지 확인하세요', 'err'));
+</script>
+</body>
+</html>

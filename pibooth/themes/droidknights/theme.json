@@ -1,0 +1,139 @@
+{
+  "name": "DroidKnights 2026",
+  "source": "DroidKnights Design System (tokens/colors.css, tokens/typography.css)",
+  "colors": {
+    "space": "#0B1230",
+    "navy": "#0E1A3A",
+    "navy-2": "#16234A",
+    "blue": "#2D7BFF",
+    "purple": "#7B5CFF",
+    "lavender": "#B18CFF",
+    "white": "#FFFFFF",
+    "text": "#EAF0FF",
+    "text-dim": "#B9C6E8",
+    "text-muted": "#8B99C0",
+    "line": "#2A345C",
+
+    "background": "space",
+    "surface": "navy",
+    "surface-raised": "navy-2",
+    "accent": "blue",
+    "accent-2": "purple",
+    "accent-3": "lavender",
+    "on-accent": "white"
+  },
+  "gradients": {
+    "brand": ["blue", "purple"],
+    "text": ["blue", "lavender"]
+  },
+  "fonts": {
+    "display": "fonts/SpaceGrotesk-Bold.ttf",
+    "display-medium": "fonts/SpaceGrotesk-Medium.ttf",
+    "heading": "NotoSansKR-Black",
+    "body": "NotoSansKR-Bold",
+    "mono": "fonts/RobotoMono-Medium.ttf"
+  },
+  "web": {
+    "fonts_css": "https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500&display=swap",
+    "font_display": "'Space Grotesk', 'Noto Sans KR', sans-serif",
+    "font_body": "'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif",
+    "font_mono": "'Roboto Mono', ui-monospace, monospace",
+    "radius": "22px",
+    "radius_small": "12px"
+  },
+  "assets": {
+    "logo": "assets/logo-lockup.png",
+    "wordmark": "assets/logo-wordmark.png",
+    "icon": "assets/logo-favicon.png",
+    "app_icon": "assets/app-icon.png",
+    "mascot": "assets/mascot/hero.png",
+    "mascot_wave": "assets/mascot/wave.png",
+    "mascot_cheer": "assets/mascot/cheer.png",
+    "mascot_welcome": "assets/mascot/welcome.png",
+    "mascot_point": "assets/mascot/point.png",
+    "mascot_fly": "assets/mascot/fly.png",
+    "mascot_laptop": "assets/mascot/laptop.png",
+    "booth_capture_group": "assets/booth-capture-group.png",
+    "booth_processing": "assets/booth-processing.png",
+    "booth_background": "assets/booth-background.jpg"
+  },
+  "booth": {
+    "background": "background",
+    "background_image": "booth_background",
+    "text": "text",
+    "pictogram": "accent-3",
+    "frame": "accent",
+    "flash": "white",
+    "countdown": "text",
+    "font": "body"
+  },
+  "pictograms": {
+    "capture_left.png": "booth_capture_group",
+    "capture_right.png": "mascot_point",
+    "processing.png": "booth_processing",
+    "finished_left.png": "mascot_wave",
+    "finished_right.png": "mascot_fly"
+  },
+  "qrcode": {
+    "foreground": "space",
+    "background": "white"
+  },
+  "event": {
+    "name": "DroidKnights 2026",
+    "eyebrow": "ANDROID CONFERENCE 2026",
+    "label": "PHOTO BOOTH",
+    "tagline": "UNLOCK THE NEXT LEVEL",
+    "date": "2026.11.02 MON",
+    "place": "ST CENTER, SEOUL",
+    "hashtag": "#DROIDKNIGHTS"
+  },
+  "texts": {
+    "ko": {
+      "intro": "사진 찍기",
+      "intro_print": "이 사진을\n아직 인쇄할 수\n있어요",
+      "choose": "몇 컷으로 찍을까요?",
+      "1": "1컷",
+      "2": "2컷",
+      "3": "3컷",
+      "4": "4컷",
+      "layout": "프레임을 골라주세요",
+      "chosen": "준비됐나요?",
+      "smile": "웃어요!",
+      "processing": "사진을 만드는 중…",
+      "print": "인쇄할까요?",
+      "print_forget": "이 사진은\n지울게요",
+      "finished": "함께 다음 차원으로!",
+      "oops": "앗, 문제가 생겼어요",
+      "qrcode": "QR을 찍어\n사진 받기"
+    },
+    "en": {
+      "finished": "Unlock the next level!",
+      "qrcode": "Scan for\nyour photo"
+    }
+  },
+  "clip": {
+    "watermark": "logo",
+    "position": "bottomright",
+    "width": 0.2,
+    "opacity": 0.9
+  },
+  "build": {
+    "style": "galaxy",
+    "mascot_overlap": [1]
+  },
+  "share": {
+    "texts": {
+      "ko": {
+        "mailBody": "DroidKnights 2026 포토부스에서 찍은 사진이에요. 아래 링크에서 보고 저장할 수 있어요. 링크는 7일 동안 열려요.",
+        "privacy": "입력한 이메일은 링크 발송에만 사용되며 저장되지 않습니다."
+      },
+      "en": {
+        "mailBody": "Here is your photo from the DroidKnights 2026 photo booth. View and save it with the link below. The link works for 7 days."
+      }
+    }
+  },
+  "templates": [
+    "templates/droidknights-4.json",
+    "templates/droidknights-1.json"
+  ]
+}

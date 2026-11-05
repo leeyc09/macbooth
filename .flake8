@@ -1,0 +1,9 @@
+[flake8]
+max-line-length = 160
+exclude = .git,__pycache__,build,dist,*.egg-info,.venv
+# Imports placed after a sys.path update
+per-file-ignores =
+    setup.py:E402
+    tests/conftest.py:E402
+    # The default template of the plugin is a one-line XML document
+    plugins/pibooth_picture_template.py:E501

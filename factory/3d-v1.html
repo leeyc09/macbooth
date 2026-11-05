@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo Factory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700;900&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500&display=swap">
+<style>
+  :root {
+    --space: #0B1230; --lavender: #B18CFF; --blue: #2D7BFF;
+    --text: #EAF0FF; --text-muted: #8B99C0;
+    --grad: linear-gradient(90deg, #2D7BFF, #B18CFF);
+    --ease: cubic-bezier(.22,.61,.36,1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #050916; overflow: hidden; }
+  body { font-family: 'Noto Sans KR', sans-serif; color: var(--text); }
+  #stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; overflow: hidden;
+    background:
+      radial-gradient(900px 600px at 15% 20%, rgba(45,123,255,.28), transparent 70%),
+      radial-gradient(1000px 700px at 85% 25%, rgba(123,92,255,.30), transparent 70%),
+      radial-gradient(900px 500px at 50% 105%, rgba(123,92,255,.28), transparent 70%),
+      var(--space); }
+  .stars { position: absolute; inset: 0; opacity: .8;
+    background-image:
+      radial-gradient(2px 2px at 120px 80px, #fff, transparent), radial-gradient(1.5px 1.5px at 340px 220px, var(--lavender), transparent),
+      radial-gradient(2px 2px at 620px 120px, #fff, transparent), radial-gradient(1.5px 1.5px at 880px 60px, var(--blue), transparent),
+      radial-gradient(2px 2px at 1180px 90px, #fff, transparent), radial-gradient(1.5px 1.5px at 1420px 200px, var(--lavender), transparent),
+      radial-gradient(2px 2px at 1700px 140px, #fff, transparent), radial-gradient(1.5px 1.5px at 260px 420px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 1560px 420px, #fff, transparent), radial-gradient(2px 2px at 1820px 520px, var(--blue), transparent);
+    background-size: 1920px 600px; }
+  canvas#gl { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+  .logo { position: absolute; left: 64px; top: 40px; height: 150px; z-index: 2; transition: opacity .6s; }
+  .header { position: absolute; right: 72px; top: 60px; text-align: right; z-index: 2; transition: opacity .6s; }
+  .dim .logo, .dim .header { opacity: .25; }
+  .eyebrow { font: 600 22px/1 'Space Grotesk'; letter-spacing: .22em; color: var(--lavender); margin: 0 0 14px; }
+  .status { font: 900 46px/1.25 'Noto Sans KR'; letter-spacing: -.02em; margin: 0; }
+  .status .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .chips { display: flex; gap: 12px; justify-content: flex-end; margin-top: 18px; }
+  .chip { font: 700 22px/1 'Space Grotesk'; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+    border: 2px solid rgba(255,255,255,.12); color: var(--text-muted); background: rgba(255,255,255,.04); transition: all .35s var(--ease); }
+  .chip.on { color: #fff; border-color: transparent; background: var(--c); box-shadow: 0 0 24px var(--c); }
+  .confetti { position: absolute; z-index: 11; font-size: 34px; pointer-events: none; }
+  .caption { position: absolute; left: 0; right: 0; bottom: 34px; text-align: center; z-index: 12;
+    font: 500 22px/1 'Roboto Mono'; color: var(--text-muted); opacity: 0; transition: opacity .6s; }
+  .caption.show { opacity: 1; }
+  .caption b { color: var(--lavender); font-weight: 500; }
+</style>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
+</head>
+<body>
+<div id="stage">
+  <div class="stars"></div>
+  <canvas id="gl"></canvas>
+  <img class="logo" src="assets/logo-lockup.png" alt="DroidKnights 2026">
+  <div class="header">
+    <p class="eyebrow">✦ PHOTO FACTORY</p>
+    <p class="status" id="status">방금 찍은 사진을<br><span class="grad">인쇄하고 있어요</span></p>
+    <div class="chips">
+      <span class="chip" id="chip-r" style="--c:#FF3B5C">R</span>
+      <span class="chip" id="chip-g" style="--c:#2BE38A">G</span>
+      <span class="chip" id="chip-b" style="--c:#2D7BFF">B</span>
+    </div>
+  </div>
+  <div class="caption" id="caption">2026.11.02 MON · ST CENTER, SEOUL · <b>#DROIDKNIGHTS</b></div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+
+// Photos shown in turn. The production page will fetch the latest uploads.
+const PHOTOS = ['assets/photo1.jpg', 'assets/photo2.jpg', 'assets/photo3.jpg'];
+const HOLD = 7000;
+const CHANNELS = [
+  { id: 'r', name: '레드', hex: '#FF3B5C', x: -24 },
+  { id: 'g', name: '그린', hex: '#2BE38A', x: 2 },
+  { id: 'b', name: '블루', hex: '#2D7BFF', x: 28 },
+];
+const BELT = { x0: -56, x1: 56, width: 17, top: 3 };
+const SHEET = { w: 9, h: 13.5 };
+
+const $ = (id) => document.getElementById(id);
+const stage = $('stage');
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// --- Renderer, isometric camera, lights -----------------------------------
+const renderer = new THREE.WebGLRenderer({ canvas: $('gl'), antialias: true, alpha: true });
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setClearColor(0x000000, 0);
+
+let scale = 1;
+function fit() {
+  scale = Math.min(innerWidth / 1920, innerHeight / 1080);
+  stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+  renderer.setPixelRatio(Math.min(2, scale * devicePixelRatio));
+  renderer.setSize(1920, 1080, false);
+}
+addEventListener('resize', fit); fit();
+
+const scene = new THREE.Scene();
+// ?closeup: zoom on the first painter droid (to check the character model)
+const CLOSEUP = new URLSearchParams(location.search).has('closeup');
+const VIEW_H = CLOSEUP ? 22 : 70;
+const camera = new THREE.OrthographicCamera(-VIEW_H * 16 / 18, VIEW_H * 16 / 18, VIEW_H / 2, -VIEW_H / 2, 0.1, 1000);
+const TARGET = CLOSEUP ? new THREE.Vector3(-32.5, 8, -13) : new THREE.Vector3(2, 9, 2);
+camera.position.copy(TARGET).add(new THREE.Vector3(100, 82, 100));
+camera.lookAt(TARGET);
+
+const ambient = new THREE.AmbientLight(0x9fb2ff, 1.1);
+const hemi = new THREE.HemisphereLight(0xb5c8ff, 0x4a2a9a, 1.6);
+const sun = new THREE.DirectionalLight(0xffffff, 2.6);
+sun.position.set(-30, 90, 40);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -90, right: 90, top: 70, bottom: -70, near: 1, far: 250 });
+scene.add(ambient, hemi, sun);
+const LIGHTS = [[ambient, 1.1], [hemi, 1.6], [sun, 2.6]];
+
+// --- Helpers ----------------------------------------------------------------
+const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.15, ...extra });
+function mesh(geometry, material, x = 0, y = 0, z = 0, parent = scene) {
+  const m = new THREE.Mesh(geometry, material);
+  m.position.set(x, y, z);
+  m.castShadow = m.receiveShadow = true;
+  parent.add(m);
+  return m;
+}
+function canvasTexture(w, h, draw) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+function label(text, color, size = 6) {
+  const t = canvasTexture(128, 128, (g) => {
+    g.font = '700 96px "Space Grotesk", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.shadowColor = color; g.shadowBlur = 24; g.fillStyle = color; g.fillText(text, 64, 70);
+  });
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false }));
+  s.scale.set(size, size, 1);
+  scene.add(s);
+  return s;
+}
+const ease = {
+  inOut: (t) => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2,
+  out: (t) => 1 - Math.pow(1 - t, 3),
+  back: (t) => 1 + 2.4 * Math.pow(t - 1, 3) + 1.4 * Math.pow(t - 1, 2),
+};
+function tween(ms, update, easing = ease.inOut) {
+  const start = performance.now();
+  return new Promise((resolve) => {
+    (function step(now) {
+      const p = Math.min(1, (now - start) / ms);
+      update(easing(p), p);
+      if (p < 1) requestAnimationFrame(step); else resolve();
+    })(start);
+  });
+}
+
+// --- Factory ---------------------------------------------------------------
+const gridTex = canvasTexture(256, 256, (g, w, h) => {
+  const grad = g.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, '#1d2e63'); grad.addColorStop(1, '#141f4a');
+  g.fillStyle = grad; g.fillRect(0, 0, w, h);
+  g.strokeStyle = 'rgba(177,140,255,.18)'; g.lineWidth = 3; g.strokeRect(0, 0, w, h);
+});
+gridTex.wrapS = gridTex.wrapT = THREE.RepeatWrapping;
+gridTex.repeat.set(13, 6);
+const floor = mesh(new THREE.BoxGeometry(132, 3, 60), [mat(0x101a3e), mat(0x101a3e), mat(0xffffff, { map: gridTex }), mat(0x0b1230), mat(0x14214a), mat(0x101a3e)], 0, -1.5, 0);
+floor.castShadow = false;
+const edge = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(132, 3, 60)),
+  new THREE.LineBasicMaterial({ color: 0x2D7BFF, transparent: true, opacity: .8 }));
+edge.position.y = -1.5; scene.add(edge);
+
+const beltTex = canvasTexture(128, 32, (g, w, h) => {
+  g.fillStyle = '#22336a'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#2f4383'; g.fillRect(0, 0, w / 2, h);
+});
+beltTex.wrapS = beltTex.wrapT = THREE.RepeatWrapping;
+beltTex.repeat.set(18, 1);
+const sideMat = mat(0x1a2858);
+mesh(new THREE.BoxGeometry(BELT.x1 - BELT.x0, BELT.top, BELT.width), [sideMat, sideMat, mat(0xffffff, { map: beltTex, roughness: .8 }), sideMat, sideMat, sideMat], 0, BELT.top / 2, 0);
+const rollers = [];
+for (let x = BELT.x0 + 5; x < BELT.x1; x += 10) {
+  const r = mesh(new THREE.CylinderGeometry(1.25, 1.25, BELT.width + .6, 16), mat(0x3a4c86, { metalness: .5 }), x, 1.3, 0);
+  r.rotation.x = Math.PI / 2;
+  rollers.push(r);
+}
+let beltRunning = false;
+
+// Stations: arch over the belt with a light bar in the channel color
+const stationLights = {};
+CHANNELS.forEach((ch) => {
+  const frame = mat(0x22356e, { metalness: .4, roughness: .4 });
+  mesh(new THREE.BoxGeometry(1.4, 22, 1.4), frame, ch.x, 11, -BELT.width / 2 - 2);
+  mesh(new THREE.BoxGeometry(1.4, 22, 1.4), frame, ch.x, 11, BELT.width / 2 + 2);
+  mesh(new THREE.BoxGeometry(1.6, 1.6, BELT.width + 6), frame, ch.x, 22.5, 0);
+  mesh(new THREE.BoxGeometry(.5, .5, BELT.width + 2), new THREE.MeshBasicMaterial({ color: ch.hex }), ch.x, 21.4, 0).castShadow = false;
+  label(ch.id.toUpperCase(), ch.hex).position.set(ch.x, 27, 0);
+  const light = new THREE.PointLight(ch.hex, 0, 30, 1.5);
+  light.position.set(ch.x, 10, 0);
+  scene.add(light);
+  stationLights[ch.id] = light;
+});
+
+// Decorations: crates and a paper stack
+mesh(new THREE.BoxGeometry(8, 7, 8), mat(0x2a3d78), 54, 3.5, -22);
+mesh(new THREE.BoxGeometry(5, 4.5, 5), mat(0x33488a), 54, 9.25, -22);
+mesh(new THREE.BoxGeometry(7, 5, 7), mat(0x2a3d78), -58, 2.5, 22);
+mesh(new THREE.BoxGeometry(9, 2.5, 13), mat(0xeef1fa), -40, 1.25, -21);
+mesh(new THREE.BoxGeometry(8.4, 2, 12.4), mat(0xffffff), -40, 3.5, -21);
+
+// --- Droids ----------------------------------------------------------------
+const skin = canvasTexture(64, 256, (g, w, h) => {
+  const grad = g.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#5aa2ff'); grad.addColorStop(.5, '#6f63ff'); grad.addColorStop(1, '#9a62ff');
+  g.fillStyle = grad; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 40; i++) {  // Galaxy sparkles
+    g.fillStyle = `rgba(255,255,255,${Math.random() * .6})`;
+    g.fillRect(Math.random() * w, Math.random() * h, 1.5, 1.5);
+  }
+});
+const starTex = canvasTexture(64, 64, (g) => {
+  g.fillStyle = '#ffffff'; g.shadowColor = '#d9c8ff'; g.shadowBlur = 10;
+  g.beginPath();
+  const c = 32, s = 22, k = 6;
+  g.moveTo(c, c - s); g.lineTo(c + k, c - k); g.lineTo(c + s, c); g.lineTo(c + k, c + k);
+  g.lineTo(c, c + s); g.lineTo(c - k, c + k); g.lineTo(c - s, c); g.lineTo(c - k, c - k); g.closePath(); g.fill();
+});
+
+function makeDroid(accent) {
+  const body = new THREE.MeshStandardMaterial({ map: skin, roughness: .3, metalness: .05, emissive: 0x3a2fb0, emissiveIntensity: .45 });
+  const root = new THREE.Group();          // Position on the floor
+  const rig = new THREE.Group();           // Bounce / lean
+  root.add(rig);
+  scene.add(root);
+
+  mesh(new THREE.CapsuleGeometry(.6, .9, 4, 10), body, -1, 1.1, 0, rig);
+  mesh(new THREE.CapsuleGeometry(.6, .9, 4, 10), body, 1, 1.1, 0, rig);
+  // Barrel body like the mascot: wide belly, flat top as wide as the head
+  const profile = [[0, 0], [1.4, .05], [2.1, .3], [2.5, .8], [2.66, 1.6], [2.66, 2.6], [2.6, 3.6], [2.52, 4.25], [2.42, 4.55], [0, 4.6]]
+    .map(([r, y]) => new THREE.Vector2(r, y));
+  mesh(new THREE.LatheGeometry(profile, 40), body, 0, 1.5, 0, rig);
+  const chest = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 2.1), new THREE.MeshBasicMaterial({ map: starTex, transparent: true }));
+  chest.position.set(0, 3.9, 2.69); rig.add(chest);
+  if (accent) {  // Belt in the channel color
+    const belt = mesh(new THREE.TorusGeometry(2.53, .2, 8, 40), new THREE.MeshBasicMaterial({ color: accent }), 0, 2.4, 0, rig);
+    belt.rotation.x = Math.PI / 2;
+  }
+  // Head on the body with the dark seam of the mascot, no neck gap
+  mesh(new THREE.CylinderGeometry(2.36, 2.36, .24, 40), new THREE.MeshStandardMaterial({ color: 0x1b1650, roughness: .6 }), 0, 6.2, 0, rig);
+
+  const head = new THREE.Group();
+  head.position.set(0, 6.3, 0);
+  rig.add(head);
+  mesh(new THREE.SphereGeometry(2.42, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), body, 0, 0, 0, head);
+  const base = mesh(new THREE.CircleGeometry(2.42, 40), body, 0, 0, 0, head);
+  base.rotation.x = Math.PI / 2;
+  const eyeMat = new THREE.MeshStandardMaterial({ color: 0x0a0f2a, roughness: .2 });
+  const shine = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  for (const x of [-.85, .85]) {
+    mesh(new THREE.SphereGeometry(.38, 16, 12), eyeMat, x, .95, 1.95, head);
+    mesh(new THREE.SphereGeometry(.12, 8, 8), shine, x + .12, 1.1, 2.3, head);
+  }
+  const antennas = [-1, 1].map((side) => {
+    const a = new THREE.Group();
+    a.position.set(side * 1.05, 1.9, 0);
+    a.rotation.z = -side * .45;
+    mesh(new THREE.CapsuleGeometry(.16, 1.3, 4, 8), body, 0, .8, 0, a);
+    head.add(a);
+    return a;
+  });
+
+  const arms = [-1, 1].map((side) => {
+    const pivot = new THREE.Group();
+    pivot.position.set(side * 2.85, 5.2, 0);
+    mesh(new THREE.CapsuleGeometry(.55, 2, 4, 10), body, 0, -1.45, 0, pivot);
+    rig.add(pivot);
+    return pivot;
+  });
+
+  let gun = null, nozzle = null;
+  if (accent) {  // Spray gun in the right hand, nozzle in the channel color
+    gun = new THREE.Group();
+    gun.position.set(0, -2.7, .4);
+    mesh(new THREE.BoxGeometry(.8, .9, 1.8), mat(0xdfe6ff, { metalness: .6, roughness: .3 }), 0, 0, .3, gun);
+    mesh(new THREE.CylinderGeometry(.5, .5, .9, 12), new THREE.MeshBasicMaterial({ color: accent }), 0, .75, -.2, gun);
+    nozzle = mesh(new THREE.ConeGeometry(.35, .8, 12), new THREE.MeshBasicMaterial({ color: accent }), 0, 0, 1.55, gun);
+    nozzle.rotation.x = Math.PI / 2;
+    arms[1].add(gun);
+  }
+  root.scale.setScalar(1.3);
+  return { root, rig, head, antennas, arms, gun, nozzle, mode: 'idle', phase: Math.random() * 10, aim: 0 };
+}
+
+const droids = [];
+const painters = {};
+CHANNELS.forEach((ch) => {
+  const d = makeDroid(ch.hex);
+  d.root.position.set(ch.x - 8.5, 0, -BELT.width / 2 - 4.5);
+  d.root.rotation.y = .55;            // Facing the belt (toward +z)
+  painters[ch.id] = d;
+  droids.push(d);
+});
+const loader = makeDroid(null);
+loader.root.position.set(BELT.x0 + 4, 0, -BELT.width / 2 - 6);
+droids.push(loader);
+const cheer = makeDroid(null);
+cheer.root.position.set(BELT.x1 - 6, 0, BELT.width / 2 + 8);
+cheer.root.rotation.y = .9;
+droids.push(cheer);
+
+// Per frame motions of the droids
+function animateDroid(d, t) {
+  const p = t + d.phase;
+  const [left, right] = d.arms;
+  d.antennas.forEach((a, i) => { a.rotation.x = Math.sin(p * 3 + i) * .12; });
+  if (d.mode === 'idle') {
+    d.rig.position.y = Math.abs(Math.sin(p * 1.8)) * .25;
+    d.rig.rotation.z = Math.sin(p * 1.8) * .03;
+    d.head.rotation.y = Math.sin(p * .6) * .45;
+    d.head.rotation.x = 0;
+    left.rotation.set(Math.sin(p * 1.8) * .15, 0, -.12);
+    right.rotation.set(-Math.sin(p * 1.8) * .15, 0, .12);
+  } else if (d.mode === 'spray') {
+    // Right arm raised toward the sheet, sweeping across it with the aim
+    d.rig.position.y = Math.abs(Math.sin(p * 9)) * .18;
+    d.rig.rotation.x = .12;
+    d.head.rotation.x = .35;
+    d.head.rotation.y = .25 - d.aim * .5 + Math.sin(p * 9) * .03;
+    right.rotation.set(-1.25 + Math.sin(p * 16) * .05, .45 - d.aim * .9, 0);
+    left.rotation.set(-.4 + Math.sin(p * 6) * .2, 0, -.35);
+  } else if (d.mode === 'carry') {
+    d.rig.position.y = Math.abs(Math.sin(p * 4)) * .15;
+    d.head.rotation.x = .2; d.head.rotation.y = 0;
+    left.rotation.set(-1.35 + d.aim * .9, 0, .25);
+    right.rotation.set(-1.35 + d.aim * .9, 0, -.25);
+  } else if (d.mode === 'cheer') {
+    d.rig.position.y = Math.abs(Math.sin(p * 7)) * 2.2;
+    d.head.rotation.x = -.2; d.head.rotation.y = Math.sin(p * 7) * .2;
+    left.rotation.set(0, 0, -2.6 + Math.sin(p * 14) * .25);
+    right.rotation.set(0, 0, 2.6 - Math.sin(p * 14) * .25);
+  }
+  if (d.mode !== 'spray') d.rig.rotation.x = 0;
+}
+
+// --- Spray particles -------------------------------------------------------
+const MAX = 260;
+const spray = {};
+CHANNELS.forEach((ch) => {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(MAX * 3), 3));
+  const points = new THREE.Points(geo, new THREE.PointsMaterial({ color: ch.hex, size: 7, sizeAttenuation: false,
+    transparent: true, opacity: .9, blending: THREE.AdditiveBlending, depthWrite: false }));
+  scene.add(points);
+  spray[ch.id] = { geo, vel: new Float32Array(MAX * 3), life: new Float32Array(MAX), next: 0, on: false, target: new THREE.Vector3() };
+});
+const tmp = new THREE.Vector3();
+function updateSpray(dt) {
+  for (const ch of CHANNELS) {
+    const s = spray[ch.id], pos = s.geo.attributes.position.array;
+    if (s.on) {
+      painters[ch.id].nozzle.getWorldPosition(tmp);
+      for (let k = 0; k < 6; k++) {
+        const i = s.next; s.next = (s.next + 1) % MAX;
+        pos.set([tmp.x, tmp.y, tmp.z], i * 3);
+        const dir = s.target.clone().add(new THREE.Vector3((Math.random() - .5) * 3, 0, (Math.random() - .5) * 3)).sub(tmp);
+        const speed = 22 + Math.random() * 10;
+        dir.normalize().multiplyScalar(speed);
+        s.vel.set([dir.x, dir.y, dir.z], i * 3);
+        s.life[i] = .55;
+      }
+    }
+    for (let i = 0; i < MAX; i++) {
+      if (s.life[i] > 0) {
+        s.life[i] -= dt;
+        pos[i * 3] += s.vel[i * 3] * dt; pos[i * 3 + 1] += s.vel[i * 3 + 1] * dt; pos[i * 3 + 2] += s.vel[i * 3 + 2] * dt;
+        if (pos[i * 3 + 1] < BELT.top + .2 || s.life[i] <= 0) { s.life[i] = 0; pos[i * 3 + 1] = -100; }
+      }
+    }
+    s.geo.attributes.position.needsUpdate = true;
+  }
+}
+
+// --- Sheet: paper + R, G, B channels wiped in by the sprays ----------------
+const sheetMaterial = (texture) => new THREE.ShaderMaterial({
+  uniforms: { map: { value: texture }, pr: { value: 0 }, pg: { value: 0 }, pb: { value: 0 }, opacity: { value: 1 } },
+  transparent: true, side: THREE.DoubleSide,
+  vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `
+    uniform sampler2D map; uniform float pr, pg, pb, opacity; varying vec2 vUv;
+    void main() {
+      vec2 m = vec2(0.045, 0.03);                      // White photo border
+      if (vUv.x < m.x || vUv.x > 1.0 - m.x || vUv.y < m.y || vUv.y > 1.0 - m.y) {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, opacity);
+      } else {
+        vec2 uv = (vUv - m) / (1.0 - 2.0 * m);
+        vec3 t = texture2D(map, uv).rgb;
+        float y = 1.0 - uv.y;                          // Wipe from the far edge
+        float r = step(y, pr), g = step(y, pg), b = step(y, pb);
+        vec3 paper = mix(vec3(0.95, 0.96, 0.99), vec3(0.89, 0.91, 0.96), step(0.85, fract(uv.y * 28.0)));
+        vec3 ink = vec3(t.r * r, t.g * g, t.b * b);
+        gl_FragColor = vec4(mix(paper, ink, r), opacity);
+      }
+      #include <colorspace_fragment>
+    }`,
+});
+const loaderTex = new THREE.TextureLoader();
+
+// --- HTML effects ------------------------------------------------------------
+function setStatus(line1, line2, color) {
+  const style = color ? ` style="color:${color};-webkit-text-fill-color:${color}"` : '';
+  $('status').innerHTML = `${line1}<br><span class="grad"${style}>${line2}</span>`;
+}
+function confetti() {
+  const colors = ['#FF3B5C', '#2BE38A', '#2D7BFF', '#B18CFF', '#EAF0FF'];
+  for (let i = 0; i < 44; i++) {
+    const e = document.createElement('span');
+    e.className = 'confetti'; e.textContent = ['✦', '✧', '★'][i % 3];
+    Object.assign(e.style, { left: '960px', top: '520px', color: colors[i % colors.length] });
+    stage.appendChild(e);
+    const a = (Math.PI * 2 * i) / 44 + Math.random() * .5, d = 200 + Math.random() * 500;
+    e.animate([{ transform: 'translate(0,0) scale(.4)', opacity: 1 },
+      { transform: `translate(${Math.cos(a) * d}px, ${Math.sin(a) * d - 60}px) scale(1.2) rotate(${Math.random() * 360}deg)`, opacity: 0 }],
+      { duration: 1000 + Math.random() * 700, easing: 'cubic-bezier(.22,.61,.36,1)' }).onfinish = () => e.remove();
+  }
+}
+function setDim(on) {
+  stage.classList.toggle('dim', on);
+  return tween(700, (p) => LIGHTS.forEach(([light, base]) => { light.intensity = base * (on ? 1 - .82 * p : .18 + .82 * p); }));
+}
+
+// --- Timeline ----------------------------------------------------------------
+const FLAT = new THREE.Euler(-Math.PI / 2, 0, 0);
+const onBelt = (x) => new THREE.Vector3(x, BELT.top + .05, 0);
+
+async function slide(sheet, from, to, ms) {
+  beltRunning = true;
+  await tween(ms, (p) => { sheet.position.x = from + (to - from) * p; });
+  beltRunning = false;
+}
+
+async function paint(sheet, ch, index) {
+  const d = painters[ch.id], s = spray[ch.id];
+  setStatus(`${index + 1}번 드로이드가`, `${ch.name}을 뿌리는 중`, ch.hex);
+  d.mode = 'spray'; s.on = true;
+  stationLights[ch.id].intensity = 0;
+  await tween(1700, (p) => {
+    sheet.material.uniforms['p' + ch.id].value = p;
+    d.aim = p;
+    // Spray hits the line being printed, from the far edge to the near one
+    s.target.set(sheet.position.x, BELT.top, -SHEET.h / 2 + SHEET.h * p);
+    stationLights[ch.id].intensity = 140 * Math.min(1, p * 4, (1 - p) * 4 + .3);
+  }, (t) => t);
+  s.on = false; d.mode = 'idle'; d.aim = 0;
+  stationLights[ch.id].intensity = 0;
+  $(`chip-${ch.id}`).classList.add('on');
+}
+
+async function play(src) {
+  const texture = await loaderTex.loadAsync(src);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const sheet = new THREE.Mesh(new THREE.PlaneGeometry(SHEET.w, SHEET.h), sheetMaterial(texture));
+  scene.add(sheet);
+  document.querySelectorAll('.chip').forEach((c) => c.classList.remove('on'));
+  setStatus('방금 찍은 사진을', '인쇄하고 있어요');
+
+  // 1. The loader droid brings a blank sheet and lays it on the belt
+  loader.mode = 'carry'; loader.aim = 0;
+  // Carried like a tray: the near edge in the hands, the sheet in front of the body
+  const HOLD_TILT = .2;
+  const reach = loader.root.scale.x * 2.6;  // Hands in front of the body
+  const hands = new THREE.Vector3(loader.root.position.x, 6.4,
+    loader.root.position.z + reach + Math.cos(HOLD_TILT) * SHEET.h / 2);
+  const start = onBelt(BELT.x0 + 6);
+  sheet.position.copy(hands);
+  sheet.rotation.set(FLAT.x + HOLD_TILT, 0, 0);
+  sheet.material.uniforms.opacity.value = 0;
+  await tween(400, (p) => { sheet.material.uniforms.opacity.value = p; });
+  await sleep(300);
+  await tween(1000, (p) => {
+    loader.aim = p;
+    sheet.position.lerpVectors(hands, start, p);
+    sheet.position.y += Math.sin(p * Math.PI) * 1.5;
+    sheet.rotation.x = FLAT.x + HOLD_TILT * (1 - p);
+  });
+  loader.mode = 'idle';
+
+  // 2-4. Under each station, a droid sprays its channel on the sheet
+  let x = start.x;
+  for (let i = 0; i < CHANNELS.length; i++) {
+    await slide(sheet, x, CHANNELS[i].x, i === 0 ? 1400 : 1000);
+    x = CHANNELS[i].x;
+    await paint(sheet, CHANNELS[i], i);
+  }
+
+  // 5. Full color: to the end of the belt
+  setStatus('RGB 완성!', '사진이 나오고 있어요');
+  await slide(sheet, x, BELT.x1 - 12, 1100);
+  cheer.mode = 'cheer';
+
+  // 6. Reveal: the photo flies up and faces the camera
+  const from = sheet.position.clone(), fromQ = sheet.quaternion.clone();
+  const toQ = camera.quaternion.clone();
+  const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+  const to = TARGET.clone().sub(dir.multiplyScalar(60)).add(new THREE.Vector3(0, 0, 0));
+  const toScale = (VIEW_H * .82) / SHEET.h;
+  setStatus('완성!', '함께 다음 차원으로');
+  setDim(true);
+  setTimeout(confetti, 500);
+  await tween(1200, (p) => {
+    sheet.position.lerpVectors(from, to, p);
+    sheet.position.y += Math.sin(p * Math.PI) * 6;
+    sheet.quaternion.slerpQuaternions(fromQ, toQ, p);
+    sheet.scale.setScalar(1 + (toScale - 1) * p);
+  }, ease.back);
+  $('caption').classList.add('show');
+  await sleep(HOLD);
+
+  // 7. Outro
+  $('caption').classList.remove('show');
+  const endPos = sheet.position.clone(), right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+  await tween(900, (p) => {
+    sheet.position.copy(endPos).addScaledVector(right, 140 * p);
+    sheet.rotation.z += .02;
+    sheet.material.uniforms.opacity.value = 1 - p;
+  }, (t) => t * t);
+  scene.remove(sheet); sheet.geometry.dispose(); sheet.material.dispose(); texture.dispose();
+  cheer.mode = 'idle';
+  await setDim(false);
+  await sleep(500);
+}
+
+// --- Render loop -------------------------------------------------------------
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+  if (beltRunning) {
+    beltTex.offset.x -= dt * 1.8;
+    rollers.forEach((r) => { r.rotation.y -= dt * 6; });
+  }
+  droids.forEach((d) => animateDroid(d, t));
+  updateSpray(dt);
+  renderer.render(scene, camera);
+});
+
+(async () => {
+  for (let i = 0; ; i = (i + 1) % PHOTOS.length) await play(PHOTOS[i]);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+# Template: copy to wrangler.toml (ignored by git) and replace the example values
+# (domain, bucket, sender address) before deploying:
+#   cp wrangler.example.toml wrangler.toml
+# `npm run deploy` refuses to deploy while an example value is left.
+
+name = "pibooth-share"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# Domain of the share page (must be a zone of the Cloudflare account).
+# The booth [QRCODE] prefix_url must point to https://<this domain>/p/{picture}
+routes = [
+  { pattern = "photo.example.com", custom_domain = true }
+]
+
+# Same bucket as the [R2] bucket option of pibooth.cfg
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "your-bucket"
+
+[vars]
+# Event and sender names come from src/theme.js (pibooth theme); set
+# EVENT_NAME / FROM_NAME here only to override them.
+# Sender address: must belong to the domain verified in Amazon SES (or Resend/Brevo)
+FROM_EMAIL = "photo@example.com"
+# Amazon SES region where the domain is verified
+AWS_REGION = "ap-northeast-2"
+
+# Max 30 emails per minute per IP (guests on the venue Wi-Fi share one IP)
+[[ratelimits]]
+name = "SEND_LIMITER"
+namespace_id = "1001"
+simple = { limit = 30, period = 60 }
+
+# Max 3 emails per minute to the same address
+[[ratelimits]]
+name = "RECIPIENT_LIMITER"
+namespace_id = "1002"
+simple = { limit = 3, period = 60 }
+
+# Secrets (not in this file). Amazon SES (used first when set), with the keys
+# of a send-only IAM user:
+#   npx wrangler secret put AWS_ACCESS_KEY_ID
+#   npx wrangler secret put AWS_SECRET_ACCESS_KEY
+# or one of:
+#   npx wrangler secret put RESEND_API_KEY
+#   npx wrangler secret put BREVO_API_KEY

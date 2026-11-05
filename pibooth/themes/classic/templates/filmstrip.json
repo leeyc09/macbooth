@@ -1,0 +1,98 @@
+{
+  "format": "pibooth-template",
+  "version": 1,
+  "name": "Film strip",
+  "captures": 4,
+  "orientation": "portrait",
+  "background": {
+    "color": [
+      244,
+      241,
+      234
+    ]
+  },
+  "slots": [
+    {
+      "type": "capture",
+      "index": 1,
+      "rect": [
+        0.1,
+        0.04,
+        0.8,
+        0.165
+      ],
+      "mask": "none",
+      "crop": true
+    },
+    {
+      "type": "capture",
+      "index": 2,
+      "rect": [
+        0.1,
+        0.215,
+        0.8,
+        0.165
+      ],
+      "mask": "none",
+      "crop": true
+    },
+    {
+      "type": "capture",
+      "index": 3,
+      "rect": [
+        0.1,
+        0.39,
+        0.8,
+        0.165
+      ],
+      "mask": "none",
+      "crop": true
+    },
+    {
+      "type": "capture",
+      "index": 4,
+      "rect": [
+        0.1,
+        0.565,
+        0.8,
+        0.165
+      ],
+      "mask": "none",
+      "crop": true
+    },
+    {
+      "type": "text",
+      "index": 1,
+      "rect": [
+        0.06,
+        0.75,
+        0.88,
+        0.1
+      ],
+      "align": "center",
+      "font": "Amatic-Bold",
+      "color": [
+        38,
+        34,
+        28
+      ]
+    },
+    {
+      "type": "text",
+      "index": 2,
+      "rect": [
+        0.06,
+        0.86,
+        0.88,
+        0.06
+      ],
+      "align": "center",
+      "font": "Amatic-Bold",
+      "color": [
+        140,
+        133,
+        120
+      ]
+    }
+  ]
+}

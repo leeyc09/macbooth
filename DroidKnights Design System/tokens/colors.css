@@ -1,0 +1,57 @@
+/* DroidKnights — Color tokens
+   Concept: deep space-navy base with a blue→purple galaxy gradient accent. */
+:root {
+  /* Brand core */
+  --dk-blue: #2D7BFF;      /* primary accent · links · point 1 */
+  --dk-purple: #7B5CFF;    /* secondary accent · gradient end · point 2 */
+  --dk-lavender: #B18CFF;  /* labels · sparkle · point 3 */
+
+  /* Surfaces */
+  --dk-space: #0B1230;     /* app / slide base background */
+  --dk-navy: #0E1A3A;      /* card / ink surface */
+  --dk-navy-2: #16234A;    /* raised surface / hover */
+  --dk-light-bg: #F4F5FB;  /* light-theme background */
+
+  /* Text */
+  --dk-text: #EAF0FF;      /* primary text on dark */
+  --dk-text-dim: #B9C6E8;  /* body / secondary text on dark */
+  --dk-text-muted: #8B99C0;/* captions · token labels */
+  --dk-text-ink: #3C4670;  /* primary text on light */
+  --dk-text-ink-dim: #5A6690; /* secondary text on light */
+
+  /* Hairlines */
+  --dk-border: rgba(255,255,255,.08);
+  --dk-border-strong: rgba(255,255,255,.16);
+
+  /* Sponsor tiers (metallic — kept off the brand ramp) */
+  --dk-tier-platinum: #C7CFE6;
+  --dk-tier-gold: #F0B537;
+  --dk-tier-silver: #BAC2D4;
+  --dk-tier-bronze: #C0824F;
+
+  /* Gradients */
+  --dk-grad: linear-gradient(90deg, #2D7BFF, #B18CFF);      /* @kind color */
+  --dk-grad-brand: linear-gradient(135deg, #2D7BFF, #7B5CFF); /* @kind color */
+  --dk-grad-galaxy: radial-gradient(120% 120% at 30% 20%, #7B5CFF 0%, #2D7BFF 45%, #0B1230 100%); /* @kind color */
+
+  /* Semantic aliases */
+  --dk-bg: var(--dk-space);
+  --dk-surface: var(--dk-navy);
+  --dk-surface-raised: var(--dk-navy-2);
+  --dk-accent: var(--dk-blue);
+  --dk-accent-2: var(--dk-purple);
+  --dk-on-accent: #FFFFFF;
+  --dk-link: var(--dk-blue);
+}
+
+/* Light theme scope — flip surfaces + text for light slides/pages */
+.dk-theme-light {
+  --dk-bg: var(--dk-light-bg);
+  --dk-surface: #FFFFFF;
+  --dk-surface-raised: #EEF0F8;
+  --dk-text: var(--dk-text-ink);
+  --dk-text-dim: var(--dk-text-ink-dim);
+  --dk-text-muted: #8189A8;
+  --dk-border: rgba(11,18,48,.10);
+  --dk-border-strong: rgba(11,18,48,.18);
+}

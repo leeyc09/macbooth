@@ -1,0 +1,35 @@
+/* DroidKnights — Typography tokens
+   Display: Space Grotesk (eyebrows, latin display)
+   Body:    Noto Sans KR (headings + body, KO-first)
+   Mono:    Roboto Mono (code · token values · captions) */
+:root {
+  --dk-font-display: 'Space Grotesk', 'Noto Sans KR', sans-serif;
+  --dk-font-body: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  --dk-font-mono: 'Roboto Mono', ui-monospace, monospace;
+
+  /* Weights */
+  --dk-w-light: 300;    /* @kind font */
+  --dk-w-regular: 400;  /* @kind font */
+  --dk-w-medium: 500;   /* @kind font */
+  --dk-w-bold: 700;     /* @kind font */
+  --dk-w-black: 900;    /* @kind font */
+
+  /* Type scale — tuned for 1920×1080 slides & large marketing type */
+  --dk-fs-hero: 108px;     /* cover hero · 92–118 range · weight 900 */
+  --dk-fs-slide-title: 60px; /* slide title · weight 900 */
+  --dk-fs-h1: 44px;
+  --dk-fs-h2: 34px;
+  --dk-fs-body: 20px;      /* base body */
+  --dk-fs-body-lg: 24px;
+  --dk-fs-caption: 16px;
+  --dk-fs-eyebrow: 15px;   /* UPPER · Space Grotesk · tracked */
+
+  /* Line heights */
+  --dk-lh-tight: 1.05;  /* @kind font */
+  --dk-lh-snug: 1.2;    /* @kind font */
+  --dk-lh-body: 1.6;    /* @kind font */
+
+  /* Tracking */
+  --dk-tracking-eyebrow: 0.22em;  /* @kind font */
+  --dk-tracking-tight: -0.02em;   /* @kind font */
+}

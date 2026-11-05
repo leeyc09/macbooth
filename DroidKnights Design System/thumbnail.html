@@ -1,0 +1,20 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="./styles.css">
+<style>
+*{margin:0;box-sizing:border-box}
+body{width:1280px;height:854px;display:flex;overflow:hidden;font-family:var(--dk-font-display)}
+.main{flex:1;background:var(--dk-space);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+.stars{position:absolute;inset:0;background-image:radial-gradient(3px 3px at 24% 26%,#fff,transparent),radial-gradient(4px 4px at 72% 18%,#B18CFF,transparent),radial-gradient(2px 2px at 46% 66%,#2D7BFF,transparent),radial-gradient(3px 3px at 84% 74%,#fff,transparent)}
+.glow{position:absolute;width:640px;height:640px;border-radius:50%;filter:blur(150px);background:var(--dk-purple);opacity:.45;top:-140px;right:-80px}
+.main img{height:420px;filter:var(--dk-glow-mascot);position:relative}
+.strip{width:150px;display:flex;flex-direction:column}
+.strip div{flex:1}
+</style></head><body>
+<div class="main"><div class="stars"></div><div class="glow"></div>
+  <img src="./assets/logo-mark.png" alt="DroidKnights">
+</div>
+<div class="strip">
+  <div style="background:#B18CFF"></div>
+  <div style="background:#7B5CFF"></div>
+  <div style="background:#2D7BFF"></div>
+</div>
+</body></html>

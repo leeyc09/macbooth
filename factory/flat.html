@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo Factory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@700;900&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500&display=swap">
+<style>
+  /* DroidKnights Design System tokens + the 3 printing channels */
+  :root {
+    --space: #0B1230; --navy: #0E1A3A; --navy-2: #16234A;
+    --blue: #2D7BFF; --purple: #7B5CFF; --lavender: #B18CFF;
+    --text: #EAF0FF; --text-dim: #B9C6E8; --text-muted: #8B99C0;
+    --grad: linear-gradient(90deg, #2D7BFF, #B18CFF);
+    --grad-brand: linear-gradient(135deg, #2D7BFF, #7B5CFF);
+    --glow: 0 12px 30px rgba(45,123,255,.4), 0 24px 60px rgba(123,92,255,.5);
+    --ease: cubic-bezier(.22,.61,.36,1);
+    --ch-r: #FF3B5C; --ch-g: #2BE38A; --ch-b: #2D7BFF;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #050916; overflow: hidden; }
+  body { font-family: 'Noto Sans KR', sans-serif; color: var(--text); }
+
+  /* 1920x1080 design canvas, scaled to fit the browser window */
+  #stage {
+    position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; overflow: hidden;
+    background:
+      radial-gradient(900px 600px at 12% 18%, rgba(45,123,255,.28), transparent 70%),
+      radial-gradient(1000px 700px at 88% 30%, rgba(123,92,255,.30), transparent 70%),
+      radial-gradient(800px 500px at 50% 110%, rgba(123,92,255,.25), transparent 70%),
+      var(--space);
+  }
+  .stars, .stars::after {
+    position: absolute; inset: 0; content: '';
+    background-image:
+      radial-gradient(2px 2px at 120px 80px, #fff, transparent), radial-gradient(1.5px 1.5px at 340px 220px, var(--lavender), transparent),
+      radial-gradient(2px 2px at 620px 120px, #fff, transparent), radial-gradient(1.5px 1.5px at 880px 60px, var(--blue), transparent),
+      radial-gradient(2px 2px at 1180px 90px, #fff, transparent), radial-gradient(1.5px 1.5px at 1420px 200px, var(--lavender), transparent),
+      radial-gradient(2px 2px at 1700px 140px, #fff, transparent), radial-gradient(1.5px 1.5px at 260px 420px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 1560px 420px, #fff, transparent), radial-gradient(2px 2px at 1820px 520px, var(--blue), transparent);
+    background-size: 1920px 600px; opacity: .8;
+  }
+  .stars::after { transform: translate(60px, 300px); opacity: .5; animation: twinkle 4s ease-in-out infinite alternate; }
+  @keyframes twinkle { to { opacity: .15; } }
+
+  #factory { position: absolute; inset: 0; transition: opacity .8s var(--ease), filter .8s var(--ease); }
+  #factory.dim { opacity: .25; filter: blur(3px) saturate(.8); }
+
+  /* Header */
+  .logo { position: absolute; left: 64px; top: 40px; height: 150px; }
+  .header { position: absolute; right: 72px; top: 60px; text-align: right; }
+  .eyebrow { font: 600 22px/1 'Space Grotesk'; letter-spacing: .22em; color: var(--lavender); margin: 0 0 14px; }
+  .status { font: 900 46px/1.25 'Noto Sans KR'; letter-spacing: -.02em; margin: 0; }
+  .status .grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .status .ch { -webkit-text-fill-color: currentColor; }
+  .chips { display: flex; gap: 12px; justify-content: flex-end; margin-top: 18px; }
+  .chip { font: 700 22px/1 'Space Grotesk'; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+    border: 2px solid rgba(255,255,255,.12); color: var(--text-muted); background: rgba(255,255,255,.04); transition: all .35s var(--ease); }
+  .chip.on { color: #fff; border-color: transparent; background: var(--c); box-shadow: 0 0 24px var(--c); }
+
+  /* Rail, print heads, beams */
+  .rail { position: absolute; left: 330px; width: 1260px; top: 318px; height: 18px; border-radius: 9px;
+    background: linear-gradient(180deg, #2a3b70, #16234A); box-shadow: 0 6px 18px rgba(0,0,0,.45); }
+  .station { position: absolute; top: 336px; width: 210px; height: 364px; }
+  .station .head { position: absolute; left: 45px; top: 0; width: 120px; height: 74px; border-radius: 0 0 18px 18px;
+    background: linear-gradient(180deg, #1c2c5c, var(--navy)); box-shadow: 0 0 0 3px var(--c), 0 10px 30px rgba(0,0,0,.5); }
+  .station .head::before { content: attr(data-ch); position: absolute; inset: 0; display: grid; place-items: center;
+    font: 700 30px/1 'Space Grotesk'; color: var(--c); text-shadow: 0 0 14px var(--c); }
+  .station .nozzle { position: absolute; left: 85px; top: 74px; width: 40px; height: 22px; border-radius: 0 0 10px 10px; background: var(--c); }
+  .station .beam { position: absolute; left: 0; right: 0; top: 96px; bottom: 0; opacity: 0;
+    background: linear-gradient(180deg, var(--c), transparent 85%);
+    clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%); mix-blend-mode: screen; transition: opacity .25s; }
+  .station.on .beam { opacity: .55; animation: flicker .12s linear infinite; }
+  @keyframes flicker { 50% { opacity: .35; } }
+
+  /* Floor, belt and rollers */
+  .floor { position: absolute; left: 0; right: 0; top: 770px; bottom: 0;
+    background: linear-gradient(180deg, rgba(22,35,74,.95), rgba(11,18,48,.6) 60%, transparent); }
+  .belt { position: absolute; left: 0; width: 1920px; top: 700px; height: 34px; border-radius: 6px;
+    background: repeating-linear-gradient(90deg, #1d2b57 0 38px, #253669 38px 76px);
+    box-shadow: inset 0 3px 0 rgba(255,255,255,.12), 0 8px 24px rgba(0,0,0,.45); }
+  .belt.running { animation: belt .6s linear infinite; }
+  @keyframes belt { to { background-position: 76px 0; } }
+  .rollers { position: absolute; left: 0; width: 1920px; top: 734px; height: 40px; display: flex; justify-content: space-around; }
+  .roller { width: 34px; height: 34px; border-radius: 50%; border: 4px solid #3a4c86;
+    background: conic-gradient(#2a3b70 0 25%, #16234A 0 50%, #2a3b70 0 75%, #16234A 0); }
+  .belt.running ~ .rollers .roller { animation: spin .9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Characters */
+  .droid { position: absolute; }
+  .painter { filter: drop-shadow(0 0 18px var(--c)) drop-shadow(0 10px 20px rgba(0,0,0,.4)); }
+  .bob { animation: bob 1.6s ease-in-out infinite; }
+  .working { animation: work .28s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(-10px); } }
+  @keyframes work { 50% { transform: translateY(-14px) rotate(-5deg); } }
+  .fly { animation: fly 9s ease-in-out infinite; }
+  @keyframes fly { 0% { transform: translate(0,0) rotate(-6deg); } 50% { transform: translate(240px,-30px) rotate(6deg); } 100% { transform: translate(0,0) rotate(-6deg); } }
+  .jump { animation: jump .55s var(--ease) 3; }
+  @keyframes jump { 50% { transform: translateY(-60px) rotate(-4deg); } }
+
+  /* Sheet: white paper over the 3 channel layers added on a black base */
+  .sheet { position: absolute; z-index: 3; background: #fff; border-radius: 8px; padding: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+  .print { position: relative; width: 100%; height: 100%; border-radius: 4px; overflow: hidden; background: #000; isolation: isolate; }
+  .print img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; mix-blend-mode: screen;
+    clip-path: inset(0 0 100% 0); }
+  .print img.r { filter: url(#only-r); } .print img.g { filter: url(#only-g); } .print img.b { filter: url(#only-b); }
+  .print .paper { position: absolute; inset: 0; z-index: 2;
+    background: repeating-linear-gradient(180deg, #f3f5fb 0 18px, #e8ecf6 18px 20px); clip-path: inset(0 0 0 0); }
+  .sheet.final { z-index: 10; box-shadow: 0 0 0 4px rgba(177,140,255,.6), 0 30px 80px rgba(45,123,255,.5), 0 50px 120px rgba(123,92,255,.55); }
+
+  .spark { position: absolute; z-index: 6; font-size: 26px; pointer-events: none; text-shadow: 0 0 12px currentColor; }
+  .confetti { position: absolute; z-index: 11; font-size: 34px; pointer-events: none; }
+
+  .caption { position: absolute; left: 0; right: 0; bottom: 34px; text-align: center; z-index: 12;
+    font: 500 22px/1 'Roboto Mono'; color: var(--text-muted); opacity: 0; transition: opacity .6s; }
+  .caption.show { opacity: 1; }
+  .caption b { color: var(--lavender); font-weight: 500; }
+</style>
+</head>
+<body>
+<!-- Channel filters: keep only one of R, G, B (added back together with 'screen') -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="only-r" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter>
+  <filter id="only-g" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter>
+  <filter id="only-b" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"/></filter>
+</svg>
+
+<div id="stage">
+  <div class="stars"></div>
+
+  <div id="factory">
+    <img class="logo" src="assets/logo-lockup.png" alt="DroidKnights 2026">
+    <div class="header">
+      <p class="eyebrow">✦ PHOTO FACTORY</p>
+      <p class="status" id="status">방금 찍은 사진을<br><span class="grad">인쇄하고 있어요</span></p>
+      <div class="chips">
+        <span class="chip" id="chip-r" style="--c:var(--ch-r)">R</span>
+        <span class="chip" id="chip-g" style="--c:var(--ch-g)">G</span>
+        <span class="chip" id="chip-b" style="--c:var(--ch-b)">B</span>
+      </div>
+    </div>
+
+    <img class="droid fly" src="assets/fly.png" style="left:80px; top:300px; width:140px; filter:drop-shadow(0 10px 24px rgba(123,92,255,.55))" alt="">
+
+    <div class="floor"></div>
+    <div class="rail"></div>
+
+    <!-- 3 printing stations, each run by a droid -->
+    <div class="station" id="st-r" data-x="460" style="left:460px; --c:var(--ch-r)"><div class="beam"></div><div class="head" data-ch="R"></div><div class="nozzle"></div></div>
+    <div class="station" id="st-g" data-x="855" style="left:855px; --c:var(--ch-g)"><div class="beam"></div><div class="head" data-ch="G"></div><div class="nozzle"></div></div>
+    <div class="station" id="st-b" data-x="1250" style="left:1250px; --c:var(--ch-b)"><div class="beam"></div><div class="head" data-ch="B"></div><div class="nozzle"></div></div>
+
+    <img class="droid painter bob" id="dr-r" src="assets/laptop.png" style="left:500px; top:186px; width:130px; --c:var(--ch-r)" alt="">
+    <img class="droid painter bob" id="dr-g" src="assets/point.png" style="left:895px; top:170px; width:128px; --c:var(--ch-g); animation-delay:-.5s" alt="">
+    <img class="droid painter bob" id="dr-b" src="assets/wave.png" style="left:1290px; top:172px; width:126px; --c:var(--ch-b); animation-delay:-1s" alt="">
+
+    <div class="belt" id="belt"></div>
+    <div class="rollers">
+      <div class="roller"></div><div class="roller"></div><div class="roller"></div><div class="roller"></div><div class="roller"></div>
+      <div class="roller"></div><div class="roller"></div><div class="roller"></div><div class="roller"></div><div class="roller"></div>
+    </div>
+
+    <img class="droid bob" id="cheer" src="assets/cheer.png" style="left:1640px; top:790px; width:175px; filter:drop-shadow(0 10px 24px rgba(123,92,255,.55))" alt="">
+  </div>
+
+  <div class="caption" id="caption">2026.11.02 MON · ST CENTER, SEOUL · <b>#DROIDKNIGHTS</b></div>
+</div>
+
+<script>
+  // Photos shown in turn. The production page will fetch the latest uploads.
+  const PHOTOS = ['assets/photo1.jpg', 'assets/photo2.jpg', 'assets/photo3.jpg'];
+  const HOLD = 7000;      // Time the finished photo stays on screen (ms)
+  const PAINT = 1300;     // Time of one color pass (ms)
+  const CHANNELS = [
+    { id: 'r', name: '레드', color: '#FF3B5C' },
+    { id: 'g', name: '그린', color: '#2BE38A' },
+    { id: 'b', name: '블루', color: '#2D7BFF' },
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage');
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  function fit() {
+    const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+    stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+  }
+  addEventListener('resize', fit); fit();
+
+  // Sheet geometry on the belt (bottom on the belt top: y = 700)
+  const SHEET = { w: 168, h: 252 };
+  const onBelt = (x) => ({ left: `${x}px`, top: `${700 - SHEET.h}px`, width: `${SHEET.w}px`, height: `${SHEET.h}px` });
+  const under = (station) => Number(station.dataset.x) + (210 - SHEET.w) / 2;  // Sheet centered under a station
+  const FINAL = { left: '660px', top: '96px', width: '600px', height: '900px' };
+  const easeMove = 'cubic-bezier(.45,.05,.55,.95)';
+
+  function setStatus(line1, line2, color) {
+    const style = color ? ` style="color:${color};-webkit-text-fill-color:${color}"` : '';
+    $('status').innerHTML = `${line1}<br><span class="grad"${style}>${line2}</span>`;
+  }
+
+  function burst(x, y, count, cls, glyphs, colors) {
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('span');
+      el.className = cls;
+      el.textContent = glyphs[i % glyphs.length];
+      el.style.left = `${x}px`; el.style.top = `${y}px`;
+      el.style.color = colors[i % colors.length];
+      stage.appendChild(el);
+      const angle = (Math.PI * 2 * i) / count + Math.random() * .6;
+      const dist = 60 + Math.random() * (cls === 'confetti' ? 520 : 110);
+      el.animate([
+        { transform: 'translate(0,0) scale(.4)', opacity: 1 },
+        { transform: `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist - 50}px) scale(1.2) rotate(${Math.random() * 360}deg)`, opacity: 0 },
+      ], { duration: 800 + Math.random() * 700, easing: 'cubic-bezier(.22,.61,.36,1)' }).onfinish = () => el.remove();
+    }
+  }
+
+  async function move(sheet, from, to, duration) {
+    $('belt').classList.add('running');
+    await sheet.animate([onBelt(from), onBelt(to)], { duration, easing: easeMove, fill: 'forwards' }).finished;
+    $('belt').classList.remove('running');
+  }
+
+  // One color pass: the droid works, the beam scans the sheet top to bottom
+  async function paint(sheet, channel, layers, index) {
+    const station = $(`st-${channel.id}`), droid = $(`dr-${channel.id}`);
+    setStatus(`${index + 1}번 드로이드가`, `${channel.name}을 입히는 중`, channel.color);
+    station.classList.add('on');
+    droid.classList.replace('bob', 'working');
+    const wipe = [{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0 0)' }];
+    const anims = [layers[channel.id].animate(wipe, { duration: PAINT, easing: 'ease-in-out', fill: 'forwards' })];
+    if (index === 0) {  // The blank paper is consumed by the first pass
+      anims.push(sheet.querySelector('.paper').animate(
+        [{ clipPath: 'inset(0 0 0 0)' }, { clipPath: 'inset(100% 0 0 0)' }], { duration: PAINT, easing: 'ease-in-out', fill: 'forwards' }));
+    }
+    const sparks = setInterval(() => {
+      const rect = sheet.getBoundingClientRect(), s = stage.getBoundingClientRect(), k = 1920 / s.width;
+      burst((rect.left - s.left) * k + SHEET.w / 2, (rect.top - s.top) * k + 40 + Math.random() * 160, 3, 'spark', ['✦', '·', '✧'], [channel.color]);
+    }, 180);
+    await Promise.all(anims.map((a) => a.finished));
+    clearInterval(sparks);
+    station.classList.remove('on');
+    droid.classList.replace('working', 'bob');
+    $(`chip-${channel.id}`).classList.add('on');
+  }
+
+  async function play(src) {
+    const img = new Image();
+    img.src = src;
+    await img.decode().catch(() => {});
+
+    const sheet = document.createElement('div');
+    sheet.className = 'sheet';
+    sheet.innerHTML = `<div class="print">
+      <img class="r" src="${src}" alt=""><img class="g" src="${src}" alt=""><img class="b" src="${src}" alt="">
+      <div class="paper"></div></div>`;
+    const layers = { r: sheet.querySelector('.r'), g: sheet.querySelector('.g'), b: sheet.querySelector('.b') };
+    Object.assign(sheet.style, onBelt(-220));
+    $('factory').appendChild(sheet);
+    document.querySelectorAll('.chip').forEach((c) => c.classList.remove('on'));
+
+    // 1-3. The blank sheet rides the belt through the R, G and B stations
+    setStatus('방금 찍은 사진을', '인쇄하고 있어요');
+    let x = -220;
+    for (let i = 0; i < CHANNELS.length; i++) {
+      const target = under($(`st-${CHANNELS[i].id}`));
+      await move(sheet, x, target, i === 0 ? 1500 : 900);
+      x = target;
+      await paint(sheet, CHANNELS[i], layers, i);
+    }
+
+    // 4. Full color: the photo leaves the last station
+    setStatus('RGB 완성!', '사진이 나오고 있어요');
+    await move(sheet, x, 1620, 1100);
+    await sleep(300);
+
+    // 5. Reveal: the photo lifts off the belt to the front
+    $('factory').classList.add('dim');
+    sheet.classList.add('final');
+    $('cheer').classList.add('jump');
+    setStatus('완성!', '함께 다음 차원으로');
+    const lift = sheet.animate([onBelt(1620), { ...FINAL }], { duration: 1000, easing: 'cubic-bezier(.34,1.3,.5,1)', fill: 'forwards' });
+    setTimeout(() => burst(960, 520, 40, 'confetti', ['✦', '✧', '★'], ['#FF3B5C', '#2BE38A', '#2D7BFF', '#B18CFF', '#EAF0FF']), 450);
+    await lift.finished;
+    $('caption').classList.add('show');
+
+    await sleep(HOLD);
+
+    // 6. Outro: the photo leaves, the factory is ready for the next one
+    $('caption').classList.remove('show');
+    await sheet.animate([{ ...FINAL, opacity: 1 }, { left: '1500px', top: '-200px', width: '300px', height: '450px', opacity: 0 }],
+      { duration: 900, easing: 'cubic-bezier(.55,.06,.68,.19)', fill: 'forwards' }).finished;
+    sheet.remove();
+    $('cheer').classList.remove('jump');
+    $('factory').classList.remove('dim');
+    await sleep(900);
+  }
+
+  (async function loop() {
+    for (let i = 0; ; i = (i + 1) % PHOTOS.length) {
+      await play(PHOTOS[i]);
+    }
+  })();
+</script>
+</body>
+</html>
