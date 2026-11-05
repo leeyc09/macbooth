@@ -62,10 +62,12 @@ key_prefix` when one is set.
 
    ```ini
    [QRCODE]
-   prefix_url = https://photo.example.com/p/{picture}
+   prefix_url = https://photo.example.com/p/{key}
    ```
 
-   With a `[R2] key_prefix` (e.g. `2026-wedding/`), include it:
+   `{key}` is the uploaded object key (random by default with `[R2] random_names`,
+   `[R2] key_prefix` included). With `random_names = False`, `{picture}` (the
+   local file name) also works, with the key prefix written before it:
    `https://photo.example.com/p/2026-wedding/{picture}`.
 
 ## Limits
