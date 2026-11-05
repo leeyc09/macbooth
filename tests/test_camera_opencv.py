@@ -200,6 +200,8 @@ def test_capture_keeps_the_native_size_on_macos(fake_cv2, monkeypatch):
 
 def test_slow_camera_is_warmed_up_on_init(fake_cv2, monkeypatch):
     monkeypatch.setattr(opencv, 'IS_MACOS', False)
+    # Room for the retry after the empty read (0.2s pause) on a slow CI runner
+    monkeypatch.setattr(opencv, 'WARMUP_TIMEOUT', 5)
     proxy = get_cv_camera_proxy()
     # The webcam delivers nothing for its first few reads (macOS warmup)
     frames = {'count': 0}
